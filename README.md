@@ -95,7 +95,7 @@ npm run test:e2e
 
 Generate route types before typechecking a clean checkout. The database test needs running PostgreSQL. Browser tests need the application and worker; Microsoft Edge is the default browser, or set PLAYWRIGHT_BROWSER_CHANNEL=chromium after installing Playwright Chromium. TEST_BASE_URL can target another running deployment. Regular tests do not call the model; node scripts/smoke-inference.mjs deliberately uploads two samples and consumes API allowance.
 
-The [CI workflow](.github/workflows/ci.yml) configures isolated PostgreSQL, route generation, typechecking, a production build, and Chromium workflows with inference disabled. A published workflow result remains separate from the local results below.
+The [CI workflow](.github/workflows/ci.yml) runs isolated PostgreSQL tests, route generation, typechecking, a production build, and Chromium workflows with inference disabled. The [first hosted run passed](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41763975019): 41 tests and five API/browser workflows.
 
 The latest deterministic suite recorded **40 passes and one database test skipped** without database configuration; that database integration test then **passed separately**, including competing reservations at the global/workspace ceilings. All **three API workflow tests and two browser tests passed on the public deployment**. Production build, restart/persistence, and isolated backup restoration passed. Live Opus extraction completed the $4,400 reconciliation and rejected the stale approval. These checks are prototype evidence, not an extraction-accuracy study. [Results](docs/evaluation.md)
 

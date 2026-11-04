@@ -7,9 +7,14 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Shortfall · The exception desk',
-  description: 'A shared workspace for invoice discrepancies, supporting evidence, and verified resolutions.',
+  description:
+    'A shared workspace for invoice discrepancies, supporting evidence, and verified resolutions.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
 }

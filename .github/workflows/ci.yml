@@ -49,6 +49,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Source formatting
+        run: npm run format:check
       - name: Unit and isolated PostgreSQL tests
         run: npm test
       - name: Generate route types

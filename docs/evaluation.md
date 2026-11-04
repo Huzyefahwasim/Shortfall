@@ -18,7 +18,7 @@ Results snapshot: 4 November 2026. These results cover local checks and the publ
 | Backup restoration | Passed in an isolated temporary database | Nine tables, 34 cases, and seven budget reservations restored; temporary database removed and application database unchanged |
 | Recorded public workflow | Passed | 1 minute 53.16 seconds, captioned WebM without audio; local draft, not a published final submission |
 
-The regular suite and separate database run together exercised 41 tests; they were not one combined 41-pass invocation. Browser tests use manual entry and do not claim live inference coverage. The separate live smoke calls the provider.
+The local regular suite and separate database run together exercised 41 tests. The [hosted CI run](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41763975019) then passed all 41 in one invocation, followed by five API/browser tests on Chromium. Browser tests use manual entry and do not claim live inference coverage. The separate live smoke calls the provider.
 
 ## Live extraction snapshot
 
@@ -49,7 +49,7 @@ npm run build
 npm run test:e2e
 ~~~
 
-Generate route types before typechecking a clean checkout. Start web, worker, and PostgreSQL before browser/API workflow tests. Playwright defaults to Microsoft Edge; PLAYWRIGHT_BROWSER_CHANNEL=chromium selects installed Chromium. Tests create separate synthetic sessions. The database integration test requires DATABASE_URL and does not call the model. The CI configuration uses isolated PostgreSQL and Chromium with inference disabled; no hosted CI result is claimed here.
+Generate route types before typechecking a clean checkout. Start web, worker, and PostgreSQL before browser/API workflow tests. Playwright defaults to Microsoft Edge; PLAYWRIGHT_BROWSER_CHANNEL=chromium selects installed Chromium. Tests create separate synthetic sessions. The database integration test requires DATABASE_URL and does not call the model. Hosted CI uses isolated PostgreSQL and Chromium with inference disabled.
 
 To exercise live inference deliberately:
 
@@ -92,7 +92,7 @@ Evidence checks require exact unique source quotes, server-calculated offsets, m
 - [ ] Recheck public visitor isolation, expiry, upload limits, and failure states on the deployed build.
 - [ ] Finish narration, slides, final video hosting, and submission-link verification. A captioned silent draft is recorded.
 
-The deployed restart and isolated restoration were exercised, not inferred from local retry tests or the existence of a dump. Hosted CI still awaits the initial push; its configuration is not a remote passing result.
+The deployed restart and isolated restoration were exercised, not inferred from local retry tests or the existence of a dump. Hosted CI also passed the typecheck, production build, 41 tests, and five browser/API workflows.
 
 ## Document-quality evaluation still to run
 

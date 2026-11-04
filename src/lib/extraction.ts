@@ -11,22 +11,37 @@ export const MAX_DOCUMENT_BYTES = 20_000;
 
 const textField = z.string().max(240);
 const amountField = z.number().int().min(0).max(100_000_000);
-const evidenceSchema = z.object({
-  field: z.string().max(40), value: z.string().max(240), quote: z.string().min(1).max(1_200),
-}).strict();
+const evidenceSchema = z
+  .object({
+    field: z.string().max(40),
+    value: z.string().max(240),
+    quote: z.string().min(1).max(1_200),
+  })
+  .strict();
 
-export const extractionSchema = z.object({
-  kind: z.enum(['purchase_order', 'invoice', 'receipt', 'credit']),
-  reference: textField, supplier: textField, poNumber: textField, invoiceNumber: textField,
-  sku: textField, quantity: z.number().int().min(0).max(1_000_000),
-  unitPriceCents: amountField, totalCents: amountField, currency: textField,
-  evidence: z.array(evidenceSchema).min(1).max(12),
-}).strict();
+export const extractionSchema = z
+  .object({
+    kind: z.enum(['purchase_order', 'invoice', 'receipt', 'credit']),
+    reference: textField,
+    supplier: textField,
+    poNumber: textField,
+    invoiceNumber: textField,
+    sku: textField,
+    quantity: z.number().int().min(0).max(1_000_000),
+    unitPriceCents: amountField,
+    totalCents: amountField,
+    currency: textField,
+    evidence: z.array(evidenceSchema).min(1).max(12),
+  })
+  .strict();
 
 export type ValidatedExtraction = Omit<ExtractionFields, 'evidence'> & { evidence: Evidence[] };
 
 export class ExtractionReviewError extends Error {
-  constructor(message: string) { super(message); this.name = 'ExtractionReviewError'; }
+  constructor(message: string) {
+    super(message);
+    this.name = 'ExtractionReviewError';
+  }
 }
 
 const commonFields = ['reference', 'supplier', 'poNumber', 'sku', 'quantity', 'currency'] as const;
@@ -37,7 +52,9 @@ export function requiredFields(kind: DocumentKind): string[] {
   return kind === 'purchase_order' ? priced : [...priced, 'invoiceNumber'];
 }
 
-function canonical(value: string | number): string { return String(value).trim(); }
+function canonical(value: string | number): string {
+  return String(value).trim();
+}
 
 function literalContains(quote: string, value: string): boolean {
   const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -46,8 +63,11 @@ function literalContains(quote: string, value: string): boolean {
 
 function moneyTokens(quote: string): number[] {
   const values: number[] = [];
-  if (/[\-−]\s*(?:USD\s*|US\$\s*|\$\s*)?\d|\(\s*(?:USD\s*|US\$\s*|\$\s*)?\d/i.test(quote)) return values;
-  for (const match of quote.matchAll(/(?<![\d.,\-])(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?(?![\d.,])/g)) {
+  if (/[\-−]\s*(?:USD\s*|US\$\s*|\$\s*)?\d|\(\s*(?:USD\s*|US\$\s*|\$\s*)?\d/i.test(quote))
+    return values;
+  for (const match of quote.matchAll(
+    /(?<![\d.,\-])(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?(?![\d.,])/g,
+  )) {
     const [whole, fraction = ''] = match[0].replaceAll(',', '').split('.');
     values.push(Number(whole) * 100 + Number(fraction.padEnd(2, '0')));
   }
@@ -55,31 +75,48 @@ function moneyTokens(quote: string): number[] {
 }
 
 function provesValue(field: string, value: string | number, quote: string): boolean {
-  if (field === 'unitPriceCents' || field === 'totalCents') return moneyTokens(quote).includes(Number(value));
+  if (field === 'unitPriceCents' || field === 'totalCents')
+    return moneyTokens(quote).includes(Number(value));
   if (field === 'quantity') {
     if (/[\-−]\s*\d/.test(quote)) return false;
-    return new RegExp(`(?<![\\p{L}\\p{N}_.,])${value}(?![\\p{L}\\p{N}_.,])`, 'u').test(quote.replaceAll(',', ''));
+    return new RegExp(`(?<![\\p{L}\\p{N}_.,])${value}(?![\\p{L}\\p{N}_.,])`, 'u').test(
+      quote.replaceAll(',', ''),
+    );
   }
   if (field === 'currency') return /\bUSD\b|US\$/i.test(quote);
   return literalContains(quote, String(value));
 }
 
 /** Resolve evidence on the server. A quote must occur exactly once in the immutable text. */
-export function validateExtraction(raw: unknown, text: string, kind: DocumentKind): ValidatedExtraction {
+export function validateExtraction(
+  raw: unknown,
+  text: string,
+  kind: DocumentKind,
+): ValidatedExtraction {
   // Optional, absent receipt fields have explicit empty representations in the shared type.
   // Required source fields are never filled from case context or calculated here.
   let candidate = raw;
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-    const fields = {...raw} as Record<string, unknown>;
+    const fields = { ...raw } as Record<string, unknown>;
     if (kind === 'receipt' || kind === 'purchase_order') fields.invoiceNumber ??= '';
-    if (kind === 'receipt') { fields.unitPriceCents ??= 0; fields.totalCents ??= 0; }
+    if (kind === 'receipt') {
+      fields.unitPriceCents ??= 0;
+      fields.totalCents ??= 0;
+    }
     candidate = fields;
   }
   const parsed = extractionSchema.safeParse(candidate);
-  if (!parsed.success) throw new ExtractionReviewError('Extraction is incomplete or has unsupported field types. Review the source document.');
+  if (!parsed.success)
+    throw new ExtractionReviewError(
+      'Extraction is incomplete or has unsupported field types. Review the source document.',
+    );
   const result = parsed.data;
-  if (result.kind !== kind) throw new ExtractionReviewError('The extracted document type does not match the uploaded type.');
-  if (result.currency !== 'USD') throw new ExtractionReviewError('An explicit USD currency is required for this workflow.');
+  if (result.kind !== kind)
+    throw new ExtractionReviewError(
+      'The extracted document type does not match the uploaded type.',
+    );
+  if (result.currency !== 'USD')
+    throw new ExtractionReviewError('An explicit USD currency is required for this workflow.');
   const required = requiredFields(kind);
   for (const field of required) {
     const value = result[field as keyof Omit<ExtractionFields, 'evidence'>];
@@ -87,28 +124,38 @@ export function validateExtraction(raw: unknown, text: string, kind: DocumentKin
       throw new ExtractionReviewError(`Missing source evidence for ${field}.`);
     }
   }
-  if (result.quantity <= 0) throw new ExtractionReviewError('Quantity must be a positive whole number.');
+  if (result.quantity <= 0)
+    throw new ExtractionReviewError('Quantity must be a positive whole number.');
   if (kind !== 'receipt') {
-    if (result.unitPriceCents <= 0 || result.totalCents <= 0) throw new ExtractionReviewError('A positive unit price and total are required.');
+    if (result.unitPriceCents <= 0 || result.totalCents <= 0)
+      throw new ExtractionReviewError('A positive unit price and total are required.');
     if (result.quantity * result.unitPriceCents !== result.totalCents) {
-      throw new ExtractionReviewError('The stated quantity, unit price, and total disagree. Review taxes, adjustments, or multiple lines.');
+      throw new ExtractionReviewError(
+        'The stated quantity, unit price, and total disagree. Review taxes, adjustments, or multiple lines.',
+      );
     }
   }
   const seen = new Set<string>();
   const evidence: Evidence[] = result.evidence.map((item) => {
-    if (seen.has(item.field)) throw new ExtractionReviewError(`Duplicate evidence for ${item.field}.`);
+    if (seen.has(item.field))
+      throw new ExtractionReviewError(`Duplicate evidence for ${item.field}.`);
     seen.add(item.field);
     if (!(item.field in result) || item.field === 'evidence' || item.field === 'kind') {
       throw new ExtractionReviewError('Extraction contains an unsupported evidence field.');
     }
     const value = result[item.field as keyof Omit<ExtractionFields, 'evidence'>];
-    if (canonical(value) !== item.value.trim()) throw new ExtractionReviewError(`Evidence value disagrees with ${item.field}.`);
+    if (canonical(value) !== item.value.trim())
+      throw new ExtractionReviewError(`Evidence value disagrees with ${item.field}.`);
     const start = text.indexOf(item.quote);
     if (start < 0 || text.indexOf(item.quote, start + 1) !== -1) {
-      throw new ExtractionReviewError(`The supporting quote for ${item.field} is missing or ambiguous.`);
+      throw new ExtractionReviewError(
+        `The supporting quote for ${item.field} is missing or ambiguous.`,
+      );
     }
     if (!provesValue(item.field, value, item.quote)) {
-      throw new ExtractionReviewError(`The supporting quote does not contain the stated ${item.field}.`);
+      throw new ExtractionReviewError(
+        `The supporting quote does not contain the stated ${item.field}.`,
+      );
     }
     return { ...item, start, end: start + item.quote.length };
   });
@@ -124,20 +171,34 @@ export function validateExtraction(raw: unknown, text: string, kind: DocumentKin
   return { ...result, evidence };
 }
 
-export function parseExtractionResponse(output: string, text: string, kind: DocumentKind): ValidatedExtraction {
+export function parseExtractionResponse(
+  output: string,
+  text: string,
+  kind: DocumentKind,
+): ValidatedExtraction {
   let raw: unknown;
-  try { raw = JSON.parse(output); }
-  catch { throw new ExtractionReviewError('The model did not return a complete JSON extraction.'); }
+  try {
+    raw = JSON.parse(output);
+  } catch {
+    throw new ExtractionReviewError('The model did not return a complete JSON extraction.');
+  }
   return validateExtraction(raw, text, kind);
 }
 
 export function extractionCacheKey(textHash: string, kind: DocumentKind): string {
-  return createHash('sha256').update([textHash, kind, EXTRACTION_MODEL, PROMPT_VERSION, SCHEMA_VERSION].join(':')).digest('hex');
+  return createHash('sha256')
+    .update([textHash, kind, EXTRACTION_MODEL, PROMPT_VERSION, SCHEMA_VERSION].join(':'))
+    .digest('hex');
 }
 
-export function extractionRequest(text: string, kind: DocumentKind): { system: string; user: string } {
+export function extractionRequest(
+  text: string,
+  kind: DocumentKind,
+): { system: string; user: string } {
   if (!text.trim() || Buffer.byteLength(text, 'utf8') > MAX_DOCUMENT_BYTES) {
-    throw new ExtractionReviewError('The document is empty or exceeds the bounded extraction size.');
+    throw new ExtractionReviewError(
+      'The document is empty or exceeds the bounded extraction size.',
+    );
   }
   const system = [
     'Extract one supported accounts-payable document. Return only a JSON object, without markdown.',
