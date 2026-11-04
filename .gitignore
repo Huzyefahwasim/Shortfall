@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+!.env.deploy.example
+node_modules/
+.next/
+dist/
+coverage/
+*.log
+data/
+backups/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.deploy/
+.ci-logs/

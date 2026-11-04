@@ -1,0 +1,11 @@
+SYNTHETIC SUPPLIER INVOICE
+Reference: AP-2940
+Supplier: Alder Packaging
+Purchase order: PO-1086
+Invoice: AP-2940
+Item: BX-12
+Description: Reusable transit boxes
+Invoice quantity: 45
+Unit price: USD 12.50
+Invoice total: USD 562.50
+Currency: USD

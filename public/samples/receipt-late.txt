@@ -1,0 +1,9 @@
+SYNTHETIC RECEIVING RECORD
+Reference: RCV-2042
+Supplier: Northstar Components
+Purchase order: PO-1042
+Item: BR-40
+Description: Precision mounting brackets
+Accepted quantity: 10
+Currency: USD
+Receiving note: The remaining carton from the first shipment arrived today. Ten additional units passed receiving inspection. Ten units are still outstanding on the order.

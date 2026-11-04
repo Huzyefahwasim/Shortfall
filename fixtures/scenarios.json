@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "status": "planned_acceptance_cases_not_test_results",
+  "data_origin": "synthetic",
+  "currency": "USD",
+  "money_unit": "integer_cents",
+  "policy": {
+    "id": "goods-quantity-v1",
+    "scope": "exact_item_match_whole_units_equal_unit_prices_no_tax",
+    "missing_receipt": "needs_review",
+    "hold_requires_approval": true,
+    "release_requires_approval": true
+  },
+  "cases": [
+    {
+      "id": "matching_goods",
+      "ordered_units": 120,
+      "invoiced_units": 120,
+      "unit_price_cents": 4000,
+      "accepted_units": 120,
+      "credit_cents": 0,
+      "expected": {
+        "gross_invoice_cents": 480000,
+        "received_value_cents": 480000,
+        "quantity_discrepancy_cents": 0,
+        "net_invoice_cents": 480000,
+        "remaining_discrepancy_cents": 0,
+        "open_po_units": 0,
+        "next_action": "record_reconciliation"
+      }
+    },
+    {
+      "id": "short_shipment_initial",
+      "ordered_units": 120,
+      "invoiced_units": 120,
+      "unit_price_cents": 4000,
+      "accepted_units": 100,
+      "credit_cents": 0,
+      "expected": {
+        "gross_invoice_cents": 480000,
+        "received_value_cents": 400000,
+        "quantity_discrepancy_cents": 80000,
+        "net_invoice_cents": 480000,
+        "remaining_discrepancy_cents": 80000,
+        "open_po_units": 20,
+        "next_action": "request_hold_approval"
+      }
+    },
+    {
+      "id": "late_receipt_invalidates_approval",
+      "ordered_units": 120,
+      "invoiced_units": 120,
+      "unit_price_cents": 4000,
+      "accepted_units": 110,
+      "credit_cents": 0,
+      "approval_source_revision": 1,
+      "current_source_revision": 2,
+      "previous_proposal_cents": 80000,
+      "expected": {
+        "gross_invoice_cents": 480000,
+        "received_value_cents": 440000,
+        "quantity_discrepancy_cents": 40000,
+        "net_invoice_cents": 480000,
+        "remaining_discrepancy_cents": 40000,
+        "open_po_units": 10,
+        "old_approval_valid": false,
+        "mutations_from_old_approval": 0,
+        "next_action": "request_revised_hold_approval"
+      }
+    },
+    {
+      "id": "supplier_credit_reconciles_invoice",
+      "ordered_units": 120,
+      "invoiced_units": 120,
+      "unit_price_cents": 4000,
+      "accepted_units": 110,
+      "credit_cents": 40000,
+      "credit_matches_supplier_invoice_item_currency": true,
+      "expected": {
+        "gross_invoice_cents": 480000,
+        "received_value_cents": 440000,
+        "quantity_discrepancy_cents": 40000,
+        "net_invoice_cents": 440000,
+        "remaining_discrepancy_cents": 0,
+        "open_po_units": 10,
+        "next_action": "request_hold_release_and_reconciliation",
+        "payment_executed": false,
+        "purchase_order_closed": false
+      }
+    },
+    {
+      "id": "independent_case_different_values",
+      "ordered_units": 45,
+      "invoiced_units": 45,
+      "unit_price_cents": 1250,
+      "accepted_units": 38,
+      "credit_cents": 0,
+      "expected": {
+        "gross_invoice_cents": 56250,
+        "received_value_cents": 47500,
+        "quantity_discrepancy_cents": 8750,
+        "net_invoice_cents": 56250,
+        "remaining_discrepancy_cents": 8750,
+        "open_po_units": 7,
+        "next_action": "request_hold_approval"
+      }
+    },
+    {
+      "id": "missing_receipt_is_unknown",
+      "ordered_units": 120,
+      "invoiced_units": 120,
+      "unit_price_cents": 4000,
+      "accepted_units": null,
+      "credit_cents": 0,
+      "expected": {
+        "remaining_discrepancy_cents": null,
+        "ledger_mutations": 0,
+        "next_action": "needs_receiving_review"
+      }
+    },
+    {
+      "id": "credit_for_wrong_invoice",
+      "ordered_units": 120,
+      "invoiced_units": 120,
+      "unit_price_cents": 4000,
+      "accepted_units": 110,
+      "credit_cents": 0,
+      "offered_credit_cents": 40000,
+      "credit_matches_supplier_invoice_item_currency": false,
+      "expected": {
+        "remaining_discrepancy_cents": 40000,
+        "credit_linked": false,
+        "next_action": "needs_credit_review"
+      }
+    },
+    {
+      "id": "retry_after_committed_hold",
+      "command_id": "sample-hold-004",
+      "attempts": 2,
+      "failure_point": "after_database_commit_before_job_acknowledgement",
+      "expected": {
+        "logical_hold_records": 1,
+        "follow_up_tasks": 1,
+        "action_receipts": 1,
+        "next_action": "return_existing_receipt"
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+SYNTHETIC SUPPLIER CREDIT NOTE
+Reference: CN-8821-01
+Supplier: Northstar Components
+Purchase order: PO-1042
+Invoice: INV-8821
+Item: BR-40
+Description: Precision mounting brackets
+Credit quantity: 10
+Unit price: USD 40.00
+Credit total: USD 400.00
+Currency: USD
+Reason: Credit for the ten units billed but not delivered. This note reduces the original invoice by USD 400.00. It does not cancel the purchase-order balance or confirm a payment.

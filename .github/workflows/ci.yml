@@ -1,0 +1,109 @@
+name: CI
+
+"on":
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: shortfall
+          POSTGRES_USER: shortfall
+          POSTGRES_PASSWORD: shortfall_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U shortfall -d shortfall"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://shortfall:shortfall_ci@127.0.0.1:5432/shortfall
+      APP_ORIGIN: http://localhost:3000
+      TEST_BASE_URL: http://localhost:3000
+      PLAYWRIGHT_BROWSER_CHANNEL: chromium
+      ANTHROPIC_MODEL: claude-opus-5-5
+      ANTHROPIC_API_KEY: ""
+      INFERENCE_ENABLED: "false"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Unit and isolated PostgreSQL tests
+        run: npm test
+      - name: Generate route types
+        run: npx next typegen --webpack
+      - name: Type check
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Prepare browser-test database
+        run: npm run db:migrate
+      - name: Start web and worker
+        shell: bash
+        run: |
+          mkdir -p .ci-logs
+          npm start > .ci-logs/web.log 2>&1 &
+          printf '%s\n' "$!" > .ci-logs/web.pid
+          npm run worker > .ci-logs/worker.log 2>&1 &
+          printf '%s\n' "$!" > .ci-logs/worker.pid
+      - name: Wait for web, database, and worker
+        run: |
+          node --input-type=module <<'NODE'
+          import { setTimeout } from 'node:timers/promises';
+          const deadline = Date.now() + 90_000;
+          while (Date.now() < deadline) {
+            try {
+              const response = await fetch('http://localhost:3000/api/health', { signal: AbortSignal.timeout(3_000) });
+              const health = await response.json();
+              if (response.ok && health.database && health.workerOnline) process.exit(0);
+            } catch {}
+            await setTimeout(1_000);
+          }
+          throw new Error('The web application and worker did not become ready.');
+          NODE
+      - name: API and browser workflows
+        run: npm run test:e2e -- --workers=1
+      - name: Upload reports and service logs
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            playwright-report/
+            test-results/
+            .ci-logs/*.log
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Stop test processes
+        if: always()
+        shell: bash
+        run: |
+          for pid_file in .ci-logs/web.pid .ci-logs/worker.pid; do
+            if [ -f "$pid_file" ]; then
+              kill "$(cat "$pid_file")" 2>/dev/null || true
+            fi
+          done

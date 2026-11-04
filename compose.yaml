@@ -1,0 +1,75 @@
+services:
+  database:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shortfall
+      POSTGRES_USER: shortfall
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password required}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shortfall -d shortfall"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  migrate:
+    image: shortfall:latest
+    build: .
+    command: ["npm", "run", "db:migrate"]
+    environment:
+      DATABASE_URL: postgresql://shortfall:${POSTGRES_PASSWORD}@database:5432/shortfall
+    depends_on:
+      database:
+        condition: service_healthy
+  web:
+    image: shortfall:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://shortfall:${POSTGRES_PASSWORD}@database:5432/shortfall
+      APP_ORIGIN: ${APP_ORIGIN:?Public HTTPS origin required}
+      ANTHROPIC_MODEL: claude-opus-5-5
+      TRUST_PROXY_CLIENT_IP: "true"
+      NODE_ENV: production
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+  worker:
+    image: shortfall:latest
+    restart: unless-stopped
+    command: ["npm", "run", "worker"]
+    env_file:
+      - .env.worker.local
+    environment:
+      DATABASE_URL: postgresql://shortfall:${POSTGRES_PASSWORD}@database:5432/shortfall
+      NODE_ENV: production
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_HOST: ${SITE_HOST:?Public hostname required}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+volumes:
+  database:
+    name: shortfall_shortfall_local
+  caddy_data:
+  caddy_config:
