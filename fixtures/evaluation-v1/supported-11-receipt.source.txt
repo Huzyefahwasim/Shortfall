@@ -1,0 +1,2 @@
+document_type,reference,supplier,purchase_order,invoice_number,item,quantity,unit_price_usd,total_usd,currency
+receipt,GR-PO-ML-916,Marlowe Lab Supply,PO-ML-916,,ML-TUBE,10,,,USD

@@ -3,7 +3,13 @@
     request_body {
         max_size 6MB
     }
-    reverse_proxy web:3000 {
-        header_up X-Shortfall-Client-IP {remote_host}
+    handle_path /submission/* {
+        root * /srv/submission
+        file_server
+    }
+    handle {
+        reverse_proxy web:3000 {
+            header_up X-Shortfall-Client-IP {remote_host}
+        }
     }
 }

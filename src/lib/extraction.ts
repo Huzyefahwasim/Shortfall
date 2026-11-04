@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { DocumentKind, Evidence, ExtractionFields } from './types';
 
 export const EXTRACTION_MODEL = 'claude-opus-5-5';
-export const PROMPT_VERSION = 'shortfall-extraction-v2-adaptive-low';
+export const PROMPT_VERSION = 'shortfall-extraction-v3-csv-evidence';
 export const SCHEMA_VERSION = '1';
 export const MAX_INPUT_TOKENS = 8_000;
 export const MAX_OUTPUT_TOKENS = 2_000;
@@ -74,7 +74,122 @@ function moneyTokens(quote: string): number[] {
   return values;
 }
 
-function provesValue(field: string, value: string | number, quote: string): boolean {
+interface CsvCell {
+  value: string;
+  start: number;
+  end: number;
+}
+
+// CSV commas separate cells; removing every comma can merge a quantity with its price.
+// Resolve numeric cells in the original source so identifiers such as INV-284 cannot
+// be mistaken for negative amounts, and quoted thousands remain a single value.
+function csvCells(text: string): CsvCell[][] | null {
+  if (!text.split('\n', 1)[0].includes(',')) return null;
+  const rows: CsvCell[][] = [];
+  let row: CsvCell[] = [];
+  let start = 0;
+  let value = '';
+  let quoted = false;
+  let closed = false;
+  for (let i = 0; i <= text.length; i++) {
+    const character = text[i];
+    if (quoted) {
+      if (character === '"' && text[i + 1] === '"') {
+        value += '"';
+        i++;
+      } else if (character === '"') {
+        quoted = false;
+        closed = true;
+      } else if (character === undefined) return null;
+      else value += character;
+      continue;
+    }
+    if (character === ',' || character === '\n' || character === undefined) {
+      row.push({ value: value.trim(), start, end: i });
+      value = '';
+      start = i + 1;
+      closed = false;
+      if (character !== ',') {
+        rows.push(row);
+        row = [];
+      }
+    } else if (character === '"' && !value.trim() && !closed) quoted = true;
+    else if (closed && character.trim()) return null;
+    else value += character;
+  }
+  const nonempty = rows.filter((cells) => cells.some((cell) => cell.value));
+  if (
+    nonempty.length !== 2 ||
+    nonempty[0].length < 3 ||
+    nonempty[0].length !== nonempty[1].length ||
+    nonempty[0].some((cell) => !/^[A-Za-z][A-Za-z _-]*$/.test(cell.value))
+  )
+    return null;
+  return nonempty;
+}
+
+function csvNumericEvidence(
+  field: string,
+  value: number,
+  quote: string,
+  text: string,
+): boolean | null {
+  const rows = csvCells(text);
+  if (!rows) return null;
+  const headers: Record<string, string[]> = {
+    quantity: [
+      'quantity',
+      'qty',
+      'units',
+      'receivedquantity',
+      'receivedunits',
+      'acceptedquantity',
+      'acceptedunits',
+      'orderedquantity',
+      'creditedquantity',
+    ],
+    unitPriceCents: ['unitprice', 'unitpriceusd', 'unitcost', 'unitcostusd', 'priceperunit'],
+    totalCents: [
+      'total',
+      'totalusd',
+      'amount',
+      'amountusd',
+      'linetotal',
+      'linetotalusd',
+      'invoicetotal',
+      'credittotal',
+    ],
+  };
+  const columns = rows[0].flatMap((cell, index) =>
+    headers[field]?.includes(cell.value.toLowerCase().replace(/[^a-z]/g, '')) ? [index] : [],
+  );
+  // Unknown or duplicate numeric headers are ambiguous; do not borrow another cell's value.
+  if (columns.length !== 1) return false;
+  const quoteStart = text.indexOf(quote);
+  const quoteEnd = quoteStart + quote.length;
+  return rows[1].some((cell, index) => {
+    if (index !== columns[0]) return false;
+    // A numeric token must be fully covered by the exact evidence quote.
+    const raw = text.slice(cell.start, cell.end);
+    const numericStart = cell.start + raw.indexOf(cell.value);
+    if (
+      numericStart < cell.start ||
+      numericStart < quoteStart ||
+      numericStart + cell.value.length > quoteEnd
+    )
+      return false;
+    if (field === 'quantity') return /^\d+$/.test(cell.value) && Number(cell.value) === value;
+    if (!/^(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?$/.test(cell.value)) return false;
+    const [whole, fraction = ''] = cell.value.replaceAll(',', '').split('.');
+    return Number(whole) * 100 + Number(fraction.padEnd(2, '0')) === value;
+  });
+}
+
+function provesValue(field: string, value: string | number, quote: string, text: string): boolean {
+  if (['quantity', 'unitPriceCents', 'totalCents'].includes(field)) {
+    const csv = csvNumericEvidence(field, Number(value), quote, text);
+    if (csv !== null) return csv;
+  }
   if (field === 'unitPriceCents' || field === 'totalCents')
     return moneyTokens(quote).includes(Number(value));
   if (field === 'quantity') {
@@ -152,7 +267,7 @@ export function validateExtraction(
         `The supporting quote for ${item.field} is missing or ambiguous.`,
       );
     }
-    if (!provesValue(item.field, value, item.quote)) {
+    if (!provesValue(item.field, value, item.quote, text)) {
       throw new ExtractionReviewError(
         `The supporting quote does not contain the stated ${item.field}.`,
       );

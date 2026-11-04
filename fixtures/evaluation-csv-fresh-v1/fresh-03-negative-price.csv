@@ -1,0 +1,2 @@
+document_type,reference,supplier,purchase_order,invoice_number,item,quantity,unit_price_usd,total_usd,currency
+invoice,HC-INV-615,Heron Components,PO-HC-615,HC-INV-615,HC-BOLT,40,-40.00,1600.00,USD

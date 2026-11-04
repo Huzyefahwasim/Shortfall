@@ -1,0 +1,37 @@
+{
+  "designation": "Fresh post-fix CSV holdout: created after the CSV correction and frozen before its first model calls. Synthetic project-authored labels, not independent operator labels.",
+  "documents": [
+    {
+      "id": "fresh-01-reordered-invoice",
+      "file": "fresh-01-reordered-invoice.csv",
+      "kind": "invoice",
+      "expectedOutcome": "accept",
+      "reason": "Reordered quoted headers and quoted cells, with unit_cost_usd as an explicit unit-price label.",
+      "expectedFields": {"reference":"WI-INV-902","supplier":"Willow Instruments","poNumber":"PO-WI-902","invoiceNumber":"WI-INV-902","sku":"WI-CAP","quantity":16,"unitPriceCents":375,"totalCents":6000,"currency":"USD"}
+    },
+    {
+      "id": "fresh-02-quoted-thousands-credit",
+      "file": "fresh-02-quoted-thousands-credit.csv",
+      "kind": "credit",
+      "expectedOutcome": "accept",
+      "reason": "Reordered headers, a comma inside the quoted supplier name, and quoted thousands separators in money; quantity remains four whole units.",
+      "expectedFields": {"reference":"GI-CN-408","supplier":"Granite, Industrial","poNumber":"PO-GI-408","invoiceNumber":"GI-INV-408","sku":"GI-RACK","quantity":4,"unitPriceCents":125000,"totalCents":500000,"currency":"USD"}
+    },
+    {
+      "id": "fresh-03-negative-price",
+      "file": "fresh-03-negative-price.csv",
+      "kind": "invoice",
+      "expectedOutcome": "review",
+      "reason": "A negative unit price must not become positive by borrowing the same numeric value from the quantity column.",
+      "expectedFields": {}
+    },
+    {
+      "id": "fresh-04-inconsistent-total",
+      "file": "fresh-04-inconsistent-total.csv",
+      "kind": "invoice",
+      "expectedOutcome": "review",
+      "reason": "The stated $99 total conflicts with eight units at $12.50; the system must not calculate a replacement for the printed amount.",
+      "expectedFields": {}
+    }
+  ]
+}

@@ -68,6 +68,6 @@ The initial platform spans finance review and receiving/purchasing handoffs. The
 
 Report actual completion time, corrections, validation failures, and executed results with their sample size. A successful synthetic workflow does not establish customer time savings, recovered cash, reduced losses, or willingness to pay.
 
-The live smoke demonstrated a $400 discrepancy resolved in the sample case. It did not measure operator productivity or broad extraction accuracy. The next steps are public deployment checks, held-out document evaluation, and interviews with finance operators. [Evaluation](evaluation.md)
+The live smoke demonstrated a $400 discrepancy resolved in the sample case. A separate evaluation covered 28 unique synthetic documents, including a frozen baseline and a fresh CSV holdout. These checks do not measure operator productivity or customer-document accuracy. Interviews with finance operators and independently labeled documents are next. [Evaluation](evaluation-results.md)
 
 Future work includes authenticated roles, original-file retention, shared receiving allocations for split invoices, operator-approved policy configuration, and accounting connectors. Each needs its own acceptance criteria.

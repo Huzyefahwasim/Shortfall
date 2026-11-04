@@ -1,0 +1,2 @@
+currency,total_usd,quantity,item,invoice_number,purchase_order,supplier,reference,unit_price_usd,document_type
+USD,"5,000.00",4,GI-RACK,GI-INV-408,PO-GI-408,"Granite, Industrial",GI-CN-408,"1,250.00",credit

@@ -1,0 +1,71 @@
+{
+  "frozenAt": "2026-11-04T03:37:15.790Z",
+  "sourceHashes": {
+    "src/lib/extraction.ts": "0bde160c289998ad8f0bc3916225fb16006fff09b5ae56ab2c0ac1d427e3d256",
+    "src/lib/budget.ts": "b659d51baaddd9c61e17660d25292bfb8702aaf3040f2b01c0718d0f26729321",
+    "src/worker/provider.ts": "14a9aa666145860b1b9504985b76fe173b41bff3808e57f23b85923bd4ec1e41"
+  },
+  "designation": "Fresh post-fix CSV holdout: created after the CSV correction and frozen before its first model calls. Synthetic project-authored labels, not independent operator labels.",
+  "documents": [
+    {
+      "id": "fresh-01-reordered-invoice",
+      "file": "fresh-01-reordered-invoice.csv",
+      "kind": "invoice",
+      "expectedOutcome": "accept",
+      "reason": "Reordered quoted headers and quoted cells, with unit_cost_usd as an explicit unit-price label.",
+      "expectedFields": {
+        "reference": "WI-INV-902",
+        "supplier": "Willow Instruments",
+        "poNumber": "PO-WI-902",
+        "invoiceNumber": "WI-INV-902",
+        "sku": "WI-CAP",
+        "quantity": 16,
+        "unitPriceCents": 375,
+        "totalCents": 6000,
+        "currency": "USD"
+      },
+      "rawSha256": "60827e4ab190861ed94c1f6933c4530f66d0aa666781c790a62b8d43ec2807bc",
+      "textSha256": "718364e297624b2e5d72b546245bd3a06af6048bd1bb9f32c28fd088db63a076"
+    },
+    {
+      "id": "fresh-02-quoted-thousands-credit",
+      "file": "fresh-02-quoted-thousands-credit.csv",
+      "kind": "credit",
+      "expectedOutcome": "accept",
+      "reason": "Reordered headers, a comma inside the quoted supplier name, and quoted thousands separators in money; quantity remains four whole units.",
+      "expectedFields": {
+        "reference": "GI-CN-408",
+        "supplier": "Granite, Industrial",
+        "poNumber": "PO-GI-408",
+        "invoiceNumber": "GI-INV-408",
+        "sku": "GI-RACK",
+        "quantity": 4,
+        "unitPriceCents": 125000,
+        "totalCents": 500000,
+        "currency": "USD"
+      },
+      "rawSha256": "99f5eeb31d8294edf4c905a53f574917a948ad88d2c172dc6aea27c71cf92243",
+      "textSha256": "704715c1286b330dbbe4725df3d8aa7cfd1fb6ec7c7f8e06fd5583478aca15f1"
+    },
+    {
+      "id": "fresh-03-negative-price",
+      "file": "fresh-03-negative-price.csv",
+      "kind": "invoice",
+      "expectedOutcome": "review",
+      "reason": "A negative unit price must not become positive by borrowing the same numeric value from the quantity column.",
+      "expectedFields": {},
+      "rawSha256": "d06cb820208a7f8460e28493031780dacf7c073e5350ac7a0499b79a43eb897f",
+      "textSha256": "715a77bb4ff83c1368be0a9635cb19b22e1a2a0cd8c9a1a9451f828793f8d5ed"
+    },
+    {
+      "id": "fresh-04-inconsistent-total",
+      "file": "fresh-04-inconsistent-total.csv",
+      "kind": "invoice",
+      "expectedOutcome": "review",
+      "reason": "The stated $99 total conflicts with eight units at $12.50; the system must not calculate a replacement for the printed amount.",
+      "expectedFields": {},
+      "rawSha256": "64ff4b9f9dacd1885e6137b4686fc967370438c0e6e03e01049f9203240393a2",
+      "textSha256": "0e4036db07e18fefcd331806c50a450686ef56c53174a3d15e10fdfd0efbaa3d"
+    }
+  ]
+}

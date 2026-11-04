@@ -1,0 +1,10 @@
+SYNTHETIC BUSINESS RECORD
+Document: credit
+Reference: CN-CW-500
+Supplier: Cedar Workshop
+Purchase order: PO-CW-500
+Item identifier: CW-PLATE
+Quantity: 4
+Unit price: USD 12.00
+Total: USD 48.00
+Currency: USD

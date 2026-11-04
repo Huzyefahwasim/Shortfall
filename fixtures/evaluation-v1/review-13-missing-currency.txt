@@ -1,0 +1,10 @@
+SYNTHETIC BUSINESS RECORD
+Document: invoice
+Reference: EV-INV-500
+Supplier: Cedar Workshop
+Purchase order: PO-CW-500
+Invoice number: EV-INV-500
+Item identifier: CW-PLATE
+Quantity: 4
+Unit price: $12.00
+Total: $48.00

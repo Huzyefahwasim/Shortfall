@@ -1,0 +1,299 @@
+{
+  "runId": "906a770b-e88e-4606-9e51-b8b9128d65ee",
+  "startedAt": "2026-11-04T03:33:46.620Z",
+  "finishedAt": "2026-11-04T03:34:10.744Z",
+  "status": "complete",
+  "model": "claude-opus-5-5",
+  "promptVersion": "shortfall-extraction-v3-csv-evidence",
+  "designation": "Targeted regression rerun after inspecting baseline failures. This is not held-out accuracy.",
+  "baselineManifestSha256": "98ada88f379a746cc4044b8fca73c016db1ec0e80001787c26ff21a5b6d3c1fd",
+  "sourceHashes": {
+    "src/lib/extraction.ts": "0bde160c289998ad8f0bc3916225fb16006fff09b5ae56ab2c0ac1d427e3d256",
+    "src/worker/provider.ts": "14a9aa666145860b1b9504985b76fe173b41bff3808e57f23b85923bd4ec1e41"
+  },
+  "change": "Numeric CSV evidence now resolves complete source cells against numeric column headers. It preserves signs, fractional quantities, quoted thousands, and exact source offsets.",
+  "results": [
+    {
+      "id": "supported-06-invoice",
+      "passed": true,
+      "outcome": "accepted",
+      "wrongFields": [],
+      "criticalFields": {
+        "total": 9,
+        "correct": 9,
+        "wrong": 0,
+        "abstained": 0
+      },
+      "fields": {
+        "kind": "invoice",
+        "reference": "LS-INV-284",
+        "supplier": "Linden Safety",
+        "poNumber": "PO-LS-284",
+        "invoiceNumber": "LS-INV-284",
+        "sku": "LS-VEST",
+        "quantity": 32,
+        "unitPriceCents": 4995,
+        "totalCents": 159840,
+        "currency": "USD",
+        "evidence": [
+          {
+            "field": "reference",
+            "value": "LS-INV-284",
+            "quote": "invoice,LS-INV-284,Linden Safety",
+            "start": 111,
+            "end": 143
+          },
+          {
+            "field": "supplier",
+            "value": "Linden Safety",
+            "quote": "Linden Safety",
+            "start": 130,
+            "end": 143
+          },
+          {
+            "field": "poNumber",
+            "value": "PO-LS-284",
+            "quote": "PO-LS-284",
+            "start": 144,
+            "end": 153
+          },
+          {
+            "field": "invoiceNumber",
+            "value": "LS-INV-284",
+            "quote": "PO-LS-284,LS-INV-284",
+            "start": 144,
+            "end": 164
+          },
+          {
+            "field": "sku",
+            "value": "LS-VEST",
+            "quote": "LS-VEST",
+            "start": 165,
+            "end": 172
+          },
+          {
+            "field": "quantity",
+            "value": "32",
+            "quote": "LS-VEST,32",
+            "start": 165,
+            "end": 175
+          },
+          {
+            "field": "unitPriceCents",
+            "value": "4995",
+            "quote": "49.95",
+            "start": 176,
+            "end": 181
+          },
+          {
+            "field": "totalCents",
+            "value": "159840",
+            "quote": "1598.40",
+            "start": 182,
+            "end": 189
+          },
+          {
+            "field": "currency",
+            "value": "USD",
+            "quote": "1598.40,USD",
+            "start": 182,
+            "end": 193
+          }
+        ]
+      },
+      "wallMs": 10164,
+      "usage": [
+        {
+          "status": "settled",
+          "amount_microusd": "90000",
+          "actual_microusd": "18744",
+          "input_tokens": 1376,
+          "output_tokens": 662,
+          "model": "claude-opus-5-5",
+          "latency_ms": 7495
+        }
+      ]
+    },
+    {
+      "id": "supported-08-credit",
+      "passed": true,
+      "outcome": "accepted",
+      "wrongFields": [],
+      "criticalFields": {
+        "total": 9,
+        "correct": 9,
+        "wrong": 0,
+        "abstained": 0
+      },
+      "fields": {
+        "kind": "credit",
+        "reference": "CN-PO-LS-284",
+        "supplier": "Linden Safety",
+        "poNumber": "PO-LS-284",
+        "invoiceNumber": "LS-INV-284",
+        "sku": "LS-VEST",
+        "quantity": 2,
+        "unitPriceCents": 4995,
+        "totalCents": 9990,
+        "currency": "USD",
+        "evidence": [
+          {
+            "field": "reference",
+            "value": "CN-PO-LS-284",
+            "quote": "CN-PO-LS-284",
+            "start": 118,
+            "end": 130
+          },
+          {
+            "field": "supplier",
+            "value": "Linden Safety",
+            "quote": "Linden Safety",
+            "start": 131,
+            "end": 144
+          },
+          {
+            "field": "poNumber",
+            "value": "PO-LS-284",
+            "quote": ",PO-LS-284,",
+            "start": 144,
+            "end": 155
+          },
+          {
+            "field": "invoiceNumber",
+            "value": "LS-INV-284",
+            "quote": "LS-INV-284",
+            "start": 155,
+            "end": 165
+          },
+          {
+            "field": "sku",
+            "value": "LS-VEST",
+            "quote": "LS-VEST",
+            "start": 166,
+            "end": 173
+          },
+          {
+            "field": "quantity",
+            "value": "2",
+            "quote": "LS-VEST,2,",
+            "start": 166,
+            "end": 176
+          },
+          {
+            "field": "unitPriceCents",
+            "value": "4995",
+            "quote": "49.95",
+            "start": 176,
+            "end": 181
+          },
+          {
+            "field": "totalCents",
+            "value": "9990",
+            "quote": "99.90",
+            "start": 182,
+            "end": 187
+          },
+          {
+            "field": "currency",
+            "value": "USD",
+            "quote": "99.90,USD",
+            "start": 182,
+            "end": 191
+          }
+        ]
+      },
+      "wallMs": 6517,
+      "usage": [
+        {
+          "status": "settled",
+          "amount_microusd": "90000",
+          "actual_microusd": "13520",
+          "input_tokens": 1375,
+          "output_tokens": 401,
+          "model": "claude-opus-5-5",
+          "latency_ms": 3917
+        }
+      ]
+    },
+    {
+      "id": "supported-11-receipt",
+      "passed": true,
+      "outcome": "accepted",
+      "wrongFields": [],
+      "criticalFields": {
+        "total": 6,
+        "correct": 6,
+        "wrong": 0,
+        "abstained": 0
+      },
+      "fields": {
+        "kind": "receipt",
+        "reference": "GR-PO-ML-916",
+        "supplier": "Marlowe Lab Supply",
+        "poNumber": "PO-ML-916",
+        "invoiceNumber": "",
+        "sku": "ML-TUBE",
+        "quantity": 10,
+        "unitPriceCents": 0,
+        "totalCents": 0,
+        "currency": "USD",
+        "evidence": [
+          {
+            "field": "reference",
+            "value": "GR-PO-ML-916",
+            "quote": "receipt,GR-PO-ML-916",
+            "start": 111,
+            "end": 131
+          },
+          {
+            "field": "supplier",
+            "value": "Marlowe Lab Supply",
+            "quote": "Marlowe Lab Supply",
+            "start": 132,
+            "end": 150
+          },
+          {
+            "field": "poNumber",
+            "value": "PO-ML-916",
+            "quote": "Supply,PO-ML-916",
+            "start": 144,
+            "end": 160
+          },
+          {
+            "field": "sku",
+            "value": "ML-TUBE",
+            "quote": "ML-TUBE",
+            "start": 162,
+            "end": 169
+          },
+          {
+            "field": "quantity",
+            "value": "10",
+            "quote": "ML-TUBE,10",
+            "start": 162,
+            "end": 172
+          },
+          {
+            "field": "currency",
+            "value": "USD",
+            "quote": ",,,USD",
+            "start": 172,
+            "end": 178
+          }
+        ]
+      },
+      "wallMs": 6069,
+      "usage": [
+        {
+          "status": "settled",
+          "amount_microusd": "90000",
+          "actual_microusd": "11940",
+          "input_tokens": 1350,
+          "output_tokens": 327,
+          "model": "claude-opus-5-5",
+          "latency_ms": 3483
+        }
+      ]
+    }
+  ]
+}

@@ -29,6 +29,7 @@ const result = spawnSync(
     '--exclude=./test-results',
     '--exclude=./playwright-report',
     '--exclude=./.ci-logs',
+    '--exclude=./submission-public',
     '--exclude=*.log',
     '--exclude=*.tsbuildinfo',
     '.',

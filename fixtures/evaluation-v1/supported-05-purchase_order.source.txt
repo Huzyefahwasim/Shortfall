@@ -1,0 +1,11 @@
+[Page 1]
+SYNTHETIC BUSINESS RECORD
+Document: purchase order
+Reference: PO-LS-284
+Supplier: Linden Safety
+Purchase order: PO-LS-284
+Item identifier: LS-VEST
+Quantity: 32
+Unit price: USD 49.95
+Total: USD 1598.40
+Currency: USD

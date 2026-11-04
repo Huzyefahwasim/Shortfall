@@ -1,0 +1,12 @@
+{
+  "synthetic": true,
+  "document_type": "receipt",
+  "reference": "GR-PO-LS-284",
+  "supplier": "Linden Safety",
+  "purchase_order": "PO-LS-284",
+  "item": "LS-VEST",
+  "quantity": 3,
+  "unit_price_usd": "49.95",
+  "total_usd": "149.85",
+  "currency": "USD"
+}

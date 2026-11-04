@@ -6,12 +6,18 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 1050 } });
 const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));
 await page.goto(process.env.TEST_BASE_URL || 'http://localhost:3000');
+await page
+  .getByRole('heading', { name: 'Resolve an invoice exception' })
+  .waitFor({ timeout: 60000 });
+await page.screenshot({ path: '.deploy/preview-entry.png', fullPage: true });
+await page.getByRole('button', { name: /Explore a sample case/ }).click();
 await page.getByRole('heading', { name: 'The exception desk' }).waitFor({ timeout: 60000 });
 await page.screenshot({ path: '.deploy/preview-desktop.png', fullPage: true });
 const desktopOverflow = await page.evaluate(
   () => document.documentElement.scrollWidth > innerWidth,
 );
 await page.setViewportSize({ width: 390, height: 844 });
+await page.getByRole('button', { name: 'Back to cases', exact: true }).click();
 await page.screenshot({ path: '.deploy/preview-mobile.png', fullPage: true });
 const mobileOverflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
 await page.getByRole('button', { name: /Northstar Components/ }).click();

@@ -6,19 +6,20 @@ Results snapshot: 4 November 2026. These results cover local checks and the publ
 
 | Check | Observed result | Scope |
 | --- | --- | --- |
-| TypeScript | Passed | Whole repository typecheck |
-| Regular test suite | 40 passed; one database test skipped without configuration | Domain, extraction, budget arithmetic, origin checks, PDF parsing, and related deterministic checks |
+| TypeScript and formatting | Passed | Whole repository typecheck and formatting check |
+| Regular test suite | 50 passed; one database test skipped without configuration | Domain, extraction, budget arithmetic, origin checks, PDF parsing, four PCM alignment tests, and related deterministic checks |
 | Database integration | Passed separately | Ownership, competing approvals/execution, source serialization, reset accounting, retries, expiry/session limits, and concurrent global/workspace budget admission |
 | API workflow tests | Three passed locally and on the public deployment | Stale approval, credit reconciliation, duplicate execution, cross-session/origin checks, and a new independent case |
-| Browser tests | Two passed locally and on the public deployment | Manual receipt/credit flow, export, refresh persistence, and mobile viewport behavior |
+| Browser tests | Two passed locally and on the public deployment | Fresh own-case entry, guide, manual receipt/credit flow, export, refresh persistence, visitor isolation, and mobile viewport behavior |
 | Live Opus workflow | Passed locally and on the public deployment | Sample receipt and credit uploads, validated evidence, stale approval rejection, worker execution, and final reconciliation |
+| Additional deployed CSV smoke | Passed | Live Opus upload, nine exact evidence spans, and expected 2,250-cent hold |
 | Production build and deployment | Passed | Linux production build, public HTTPS, fresh session, database health, and worker heartbeat |
 | Public visual check | Passed | Desktop/mobile screenshots, no reported browser errors or horizontal overflow |
 | Restart/container replacement | Passed publicly | Queued hold and session persisted; replay produced one execution, one task, and 80,000 cents held |
 | Backup restoration | Passed in an isolated temporary database | Nine tables, 34 cases, and seven budget reservations restored; temporary database removed and application database unchanged |
 | Recorded public workflow | Passed | 1 minute 53.16 seconds, captioned WebM without audio; local draft, not a published final submission |
 
-The local regular suite and separate database run together exercised 41 tests. The [hosted CI run](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41763975019) then passed all 41 in one invocation, followed by five API/browser tests on Chromium. Browser tests use manual entry and do not claim live inference coverage. The separate live smoke calls the provider.
+The current local regular suite and separate database run together exercised 51 tests. The latest deployed API/browser run passed all five tests in 18.3 seconds. The earlier [hosted CI run](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41763975019) passed the then-current 41 tests in one invocation, followed by five API/browser tests on Chromium. Browser tests use manual entry and do not claim live inference coverage. The separate live smoke calls the provider.
 
 ## Live extraction snapshot
 
@@ -89,20 +90,19 @@ Evidence checks require exact unique source quotes, server-calculated offsets, m
 - [x] Verify persisted state after a deployed worker restart.
 - [x] Confirm persistence through container replacement and database recovery from the recorded backup.
 - [x] Exercise concurrent budget admission against PostgreSQL and confirm the global cap across workspaces.
-- [ ] Recheck public visitor isolation, expiry, upload limits, and failure states on the deployed build.
-- [ ] Finish narration, slides, final video hosting, and submission-link verification. A captioned silent draft is recorded.
+- [x] Recheck fresh public own-case entry, guide access, visitor isolation, persistence, and mobile behavior on the deployed build.
+- [x] Check expiry/session limits, upload boundaries, and failure states in database integration.
+- [ ] Finish presentation PDF, final video hosting, and submission-link verification. Narration is generated; public final media remains pending verification.
 
-The deployed restart and isolated restoration were exercised, not inferred from local retry tests or the existence of a dump. Hosted CI also passed the typecheck, production build, 41 tests, and five browser/API workflows.
+The deployed restart and isolated restoration were exercised, not inferred from local retry tests or the existence of a dump. The historical hosted CI run passed its then-current typecheck, production build, 41 tests, and five browser/API workflows; current counts are recorded above.
 
-## Document-quality evaluation still to run
+## Document-quality evaluation
 
-The proposed six development cases and twelve held-out cases have not produced a reported evaluation result. Do not describe the 18-case plan as an existing benchmark or claim 95% accuracy.
+The [document evaluation report](evaluation-results.md) records 28 unique synthetic documents and 31 settled model calls. A frozen 24-document baseline accepted 9/12 supported documents with all 74 accepted critical fields correct. Three valid CSVs went to review, accounting for 24 abstained fields. All 12 challenge expectations passed.
 
-Before tuning a prompt, prepare labeled single-line documents varying suppliers, references, receipt timing, layouts, missing values, and contradictions. Freeze held-out labels; use a new set if those labels influence tuning. Compare deterministic parsing with model extraction on the same supported inputs.
+A CSV evidence correction then passed the three targeted reruns. A separate four-document CSV set, frozen after the correction and before its calls, passed its two supported and two review expectations. The historical baseline remains unchanged; the reruns do not become a retrospective 100% accuracy claim.
 
-Record correct fields, wrong fields, missing fields, abstentions, validation failures, token usage, and elapsed time. Include failures in the denominator. A proposed 95% exact-match target remains a target until measured; report its numerator and denominator alongside the result.
-
-If extraction misses the target, restrict supported layouts and keep ambiguous documents in review. Do not replace failed live results with undisclosed stored responses.
+The documents and labels are project-authored. Customer documents and independent labeling remain future validation work. Every result includes its outcome, scope, usage, and latency; no failed response was replaced with a stored success.
 
 ## Business evidence still to collect
 

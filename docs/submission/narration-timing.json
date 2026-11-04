@@ -1,0 +1,63 @@
+{
+  "targetDurationSeconds": 240,
+  "narrationWords": 501,
+  "delivery": "Conversational, around 140 words per minute, with brief pauses around actual UI actions. These are editing targets, not measurements of application speed. Use actual application and repository pages: the README, architecture, and evaluation report.",
+  "segments": [
+    {
+      "segment": 1,
+      "stage": "problem over the current app",
+      "start": 0,
+      "end": 22,
+      "text": "An accounts payable reviewer opens an invoice for goods that have not all arrived. Finance has one total. Receiving has another. While the reviewer investigates, a new receipt changes the amount that needs a hold. Shortfall keeps that review attached to the evidence the team has now."
+    },
+    {
+      "segment": 2,
+      "stage": "fresh entry and sample selection",
+      "start": 22,
+      "end": 45,
+      "text": "Open Shortfall without an account, key, or setup. Choose Explore a sample case, or Create your own case. Each browser session gets a private seven-day workspace. Upload text PDFs, text files, CSV, or JSON. I will use the supplied Northstar case to show the workflow running on Vultr."
+    },
+    {
+      "segment": 3,
+      "stage": "late receipt and rejected old approval",
+      "start": 45,
+      "end": 105,
+      "text": "Northstar has invoiced one hundred and twenty units at forty dollars each. That is four thousand eight hundred dollars. Receiving has accepted one hundred units, leaving an eight hundred dollar discrepancy. I prepare a hold proposal and leave it unapproved. Now I upload a late receipt for ten more units. Claude Opus extracts the fields and supporting quotes. The application checks those quotes against the source and validates the item, supplier, and order. The accepted quantity becomes one hundred and ten. The discrepancy is now four hundred dollars. But the earlier proposal still says eight hundred. I reopen it and try to approve. The server rejects the request because the evidence changed. The ledger stays unchanged. A reviewer has to inspect the revised amount."
+    },
+    {
+      "segment": 4,
+      "stage": "approved correction and final ledger",
+      "start": 105,
+      "end": 159,
+      "text": "I prepare the updated proposal and approve a four hundred dollar hold. The worker records that change and creates the follow-up task. The activity history shows the result. Next, I upload a supplier credit for four hundred dollars. The application verifies its source, invoice reference, and amount. Importing it does not apply the credit. I review the correction, then approve the credit and release of the hold. The worker reconciles the invoice to four thousand four hundred dollars. Ten units remain open on the purchase order. I can export the case and its evidence. These are persisted internal records. No payment or external accounting update occurs."
+    },
+    {
+      "segment": 5,
+      "stage": "repository architecture documentation",
+      "start": 159,
+      "end": 180,
+      "text": "Vultr runs the web application, API, PostgreSQL database, and worker. The worker calls Opus for extraction. Code calculates amounts and checks approval versions. PostgreSQL stores the work queue and execution receipts, so a restart can resume an approved action without duplicating it. The provider key stays in the worker."
+    },
+    {
+      "segment": 6,
+      "stage": "repository evaluation and verified checks",
+      "start": 180,
+      "end": 205,
+      "text": "Document testing covered twenty-eight synthetic inputs. The initial pass sent three valid CSV files to review. After a validator fix, those reruns and four fresh CSV cases met their expected outcomes. None of the accepted fields we scored were wrong. We also verified restart recovery and spending limits."
+    },
+    {
+      "segment": 7,
+      "stage": "buyer and comparison text in repository",
+      "start": 205,
+      "end": 222,
+      "text": "Invoice matching is an established category. Ramp offers three-way matching; Zip offers governed procurement agents. Shortfall focuses on this changing-evidence review. The proposed buyer is a distributor's finance manager. We will test a ninety-nine-dollar monthly pilot price with operators."
+    },
+    {
+      "segment": 8,
+      "stage": "deployed app and repository close",
+      "start": 222,
+      "end": 240,
+      "text": "The next step is to review the workflow with accounts payable operators, then add authenticated roles and an accounting connector. Huzyefah Wasim built this prototype as a solo full-stack developer. You can try the deployed application and inspect the repository."
+    }
+  ]
+}

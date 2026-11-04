@@ -4,3 +4,6 @@
 *.yml text eol=lf
 Dockerfile text eol=lf
 *.png binary
+*.pdf binary
+fixtures/evaluation-v1/** -text
+fixtures/evaluation-csv-fresh-v1/** -text

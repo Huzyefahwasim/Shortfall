@@ -1,5 +1,8 @@
 'use client';
 
+import { OperationsConsole } from './operations-console';
+import { WorkspaceEntry } from './workspace-entry';
+
 import {
   useCallback,
   useEffect,
@@ -249,6 +252,46 @@ export function ShortfallApp() {
   const [showOldProposals, setShowOldProposals] = useState(false);
   const [mobileCase, setMobileCase] = useState(false);
   const initialized = useRef(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [hasEntered, setHasEntered] = useState(false);
+  const [guideVisible, setGuideVisible] = useState(false);
+  const checkedWelcome = useRef<string | null>(null);
+
+  useEffect(() => {
+    const id = workspace?.workspace.id;
+    if (!id || checkedWelcome.current === id) return;
+    checkedWelcome.current = id;
+    let seen = false;
+    try {
+      seen = localStorage.getItem('shortfall:entered:' + id) === '1';
+    } catch {
+      /* Storage may be disabled. */
+    }
+    setHasEntered(seen);
+    setShowWelcome(!seen);
+  }, [workspace?.workspace.id]);
+
+  function enterWorkspace(mode: 'sample' | 'own') {
+    if (workspace) {
+      try {
+        localStorage.setItem('shortfall:entered:' + workspace.workspace.id, '1');
+      } catch {
+        /* The session still works without local storage. */
+      }
+    }
+    setHasEntered(true);
+    setShowWelcome(false);
+    setView('desk');
+    setNotice(null);
+    if (mode === 'sample') {
+      const sample = workspace?.cases.find((record) => record.poNumber === 'PO-1042');
+      if (sample) void selectCase(sample);
+      setGuideVisible(true);
+    } else {
+      setGuideVisible(false);
+      setModal('create');
+    }
+  }
 
   const replaceCase = useCallback((record: CaseRecord) => {
     if (selectedId.current === record.id) setSelected(record);
@@ -549,828 +592,91 @@ export function ShortfallApp() {
             </>
           )}
         </div>
-        <span className="boot-footer">FINANCE OPERATIONS, WITH THE EVIDENCE ATTACHED.</span>
+        <span className="boot-footer">FINANCE OPERATIONS</span>
       </div>
     );
 
   return (
     <div className="app-shell">
-      <a href="#main-content" className="skip-link">
-        Skip to workspace
-      </a>
-      <aside className="sidebar">
-        <Brand />
-        <div className="workspace-switch">
-          <span className="workspace-avatar">S</span>
-          <div>
-            <strong>Operations workspace</strong>
-            <span>Private sample environment</span>
-          </div>
-          <LockKeyhole size={13} />
-        </div>
-        <span className="nav-label">WORKSPACE</span>
-        <nav aria-label="Main navigation">
-          <button
-            className={`nav-item ${view === 'desk' ? 'active' : ''}`}
-            onClick={() => setView('desk')}
-          >
-            <Inbox size={18} />
-            <span>Exception desk</span>
-            <span className="nav-count">{cases.filter((c) => c.status !== 'resolved').length}</span>
-          </button>
-          <button
-            className={`nav-item ${view === 'activity' ? 'active' : ''}`}
-            onClick={() => setView('activity')}
-          >
-            <History size={18} />
-            <span>Activity log</span>
-          </button>
-          <button className="nav-item" onClick={() => setModal('policy')}>
-            <Settings2 size={18} />
-            <span>Workspace policy</span>
-          </button>
-        </nav>
-        <div className="sidebar-note">
-          <span className="tiny-rule" />
-          <p>
-            Every decision.
-            <br />
-            The evidence behind it.
-          </p>
-          <span>From discrepancy to resolution.</span>
-        </div>
-        <div className="sidebar-bottom">
-          <div className="environment-status">
-            <span className={`service-dot ${workspace?.service.workerOnline ? 'online' : ''}`} />
-            {workspace?.service.workerOnline ? 'Workflow worker online' : 'Worker not connected'}
-          </div>
-          <button className="sidebar-reset" onClick={() => setModal('reset')}>
-            <RefreshCw size={13} />
-            Reset sample workspace
-          </button>
-          <div className="profile">
-            <span className="profile-avatar">FO</span>
-            <div>
-              <strong>Finance operations</strong>
-              <span>Sample workspace</span>
-            </div>
-            <ChevronDown size={14} />
-          </div>
-        </div>
-      </aside>
-
-      <main className="main" id="main-content">
-        <div className="topbar">
-          <div className="breadcrumbs">
-            <span className="mobile-brand">shortfall.</span>
-            <span>Workspace</span>
-            <ChevronRight size={13} />
-            <strong>{view === 'desk' ? 'Exception desk' : 'Activity log'}</strong>
-          </div>
-          <div className="workspace-tag">
-            <span />
-            Synthetic data · Internal ledger
-          </div>
-        </div>
-        <header className="page-header">
-          <div>
-            <div className="eyebrow">ACCOUNTS PAYABLE / OPERATIONS</div>
-            <h1>{view === 'desk' ? 'The exception desk' : 'A record of the work'}</h1>
-            <p>
-              {view === 'desk'
-                ? 'See what doesn’t match. Resolve it with the evidence.'
-                : 'Every receipt, decision, and verified change in one place.'}
-            </p>
-          </div>
-          <button className="button primary" onClick={() => setModal('create')}>
-            <Plus size={17} />
-            New case
-          </button>
-        </header>
-
-        {notice && !modal && !review && (
-          <div
-            className={`notice notice-${notice.kind}`}
-            role={notice.kind === 'error' ? 'alert' : 'status'}
-          >
-            {notice.kind === 'error' ? (
-              <CircleAlert size={17} />
-            ) : notice.kind === 'success' ? (
-              <CheckCheck size={17} />
-            ) : (
-              <Clock3 size={17} />
-            )}
-            <span>{notice.message}</span>
-            <button
-              className="icon-button"
-              aria-label="Dismiss notification"
-              onClick={() => setNotice(null)}
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )}
-
-        <section className="metrics-strip" aria-label="Workspace totals">
-          <div className="metric">
-            <div className="metric-heading">
-              <span>Open discrepancies</span>
-              <span className="metric-glyph amber">
-                <Layers3 size={17} />
-              </span>
-            </div>
-            <div className="metric-value">
-              {money(totalDiscrepancy)}
-              <span className="metric-note">
-                across {cases.filter((c) => c.status !== 'resolved').length} open cases
-              </span>
-            </div>
-          </div>
-          <div className="metric">
-            <div className="metric-heading">
-              <span>Awaiting approval</span>
-              <span className="metric-glyph">
-                <ListChecks size={17} />
-              </span>
-            </div>
-            <div className="metric-value">
-              {String(awaitingCount).padStart(2, '0')}
-              <span className="metric-note">ready for a human decision</span>
-            </div>
-          </div>
-          <div className="metric">
-            <div className="metric-heading">
-              <span>Ready for export</span>
-              <span className="metric-glyph teal">
-                <FileCheck2 size={17} />
-              </span>
-            </div>
-            <div className="metric-value">
-              {String(resolvedCount).padStart(2, '0')}
-              <span className="metric-note">reconciled invoice exceptions</span>
-            </div>
-          </div>
-        </section>
-
-        {view === 'activity' ? (
-          <section className="global-activity panel">
-            <div className="section-title">
-              <div>
-                <span className="eyebrow">WORKSPACE HISTORY</span>
-                <h2>
-                  Activity log <span className="count-badge">{allEvents.length}</span>
-                </h2>
-              </div>
-              <button
-                className="button secondary small"
-                onClick={() =>
-                  void refresh().catch((e) => setNotice({ kind: 'error', message: e.message }))
-                }
-              >
-                <RefreshCw size={14} />
-                Refresh
-              </button>
-            </div>
-            {allEvents.length ? (
-              allEvents.map((event) => (
-                <button
-                  className="global-event"
-                  key={`${event.caseRecord.id}-${event.id}`}
-                  onClick={() => {
-                    void selectCase(event.caseRecord);
-                    setView('desk');
-                    setTab('activity');
-                  }}
-                >
-                  <span className="event-icon">
-                    <History size={16} />
-                  </span>
-                  <div>
-                    <strong>{event.title}</strong>
-                    <p>{event.detail}</p>
-                    <span>
-                      {event.supplier} · {event.actor}
-                    </span>
-                  </div>
-                  <time>
-                    {date(event.at)}
-                    <span>{time(event.at)}</span>
-                  </time>
-                  <ArrowUpRight size={15} />
-                </button>
-              ))
-            ) : (
-              <Empty title="No activity yet" text="Create a case to start its history." />
-            )}
-          </section>
-        ) : (
-          <div className={`desk-layout ${mobileCase ? 'show-case' : ''}`}>
-            <section className="queue panel" aria-label="Invoice exception queue">
-              <div className="queue-heading">
-                <h2>
-                  Cases <span className="count-badge">{cases.length}</span>
-                </h2>
-                <button
-                  className="icon-button"
-                  aria-label="Refresh cases"
-                  onClick={() =>
-                    void refresh().catch((e) => setNotice({ kind: 'error', message: e.message }))
-                  }
-                >
-                  <RefreshCw size={15} />
-                </button>
-              </div>
-              <div className="queue-tools">
-                <div className="search-field">
-                  <Search size={15} />
-                  <input
-                    aria-label="Search cases"
-                    placeholder="Search supplier or invoice…"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-                <div className="queue-filter">
-                  <span className="eyebrow">SHOWING</span>
-                  <select
-                    aria-label="Filter case status"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                  >
-                    <option value="all">All cases</option>
-                    <option value="open">Open cases</option>
-                    <option value="awaiting_approval">Awaiting approval</option>
-                    <option value="on_hold">On hold</option>
-                    <option value="resolved">Resolved</option>
-                  </select>
-                </div>
-              </div>
-              <div className="case-list">
-                {visibleCases.length ? (
-                  visibleCases.map((c) => (
-                    <button
-                      key={c.id}
-                      className={`case-row ${c.id === selected?.id ? 'selected' : ''}`}
-                      onClick={() => void selectCase(c)}
-                      aria-pressed={c.id === selected?.id}
-                    >
-                      <div className="case-row-top">
-                        <span className="supplier-initials">{initials(c.supplier)}</span>
-                        <span className="case-supplier">
-                          {c.supplier}
-                          <span>{c.invoiceNumber}</span>
-                        </span>
-                        <ChevronRight size={16} />
-                      </div>
-                      <div className="case-row-bottom">
-                        <Badge status={c.status} />
-                        <strong className={c.status === 'resolved' ? 'resolved-amount' : ''}>
-                          {c.status === 'resolved' ? (
-                            <Check size={15} />
-                          ) : (
-                            money(totals(c).discrepancyCents)
-                          )}
-                        </strong>
-                      </div>
-                    </button>
-                  ))
-                ) : (
-                  <Empty
-                    title="No matching cases"
-                    text={
-                      cases.length
-                        ? 'Try a different search or status.'
-                        : 'Add an invoice to start resolving discrepancies.'
-                    }
-                  />
-                )}
-              </div>
-              <div className="queue-footer">
-                <LockKeyhole size={13} />
-                <span>Your workspace is isolated from other visitors.</span>
-              </div>
-            </section>
-
-            {selected && selectedTotals ? (
-              <section className="case-workspace" aria-label={`Case ${selected.invoiceNumber}`}>
-                <button className="back-to-queue" onClick={() => setMobileCase(false)}>
-                  <ArrowLeft size={16} />
-                  Back to cases
-                </button>
-                <div className="case-header">
-                  <div>
-                    <div className="case-kicker">
-                      <span>{selected.invoiceNumber}</span>
-                      <span className="dot-separator">/</span>
-                      <span>{selected.poNumber}</span>
-                    </div>
-                    <h2>{selected.supplier}</h2>
-                    <p>{selected.description || selected.sku}</p>
-                  </div>
-                  <div className="case-header-actions">
-                    <Badge status={selected.status} />
-                    {selected.status === 'resolved' ? (
-                      <a
-                        href={`/api/cases/${selected.id}/export?format=csv`}
-                        download
-                        className="button primary"
-                      >
-                        <ArrowDownToLine size={16} />
-                        Export reconciliation
-                      </a>
-                    ) : (
-                      <button
-                        className="button primary"
-                        disabled={!!busy || selected.status === 'queued'}
-                        onClick={() => {
-                          if (activeProposal) {
-                            setReview(activeProposal);
-                            setReviewError('');
-                          } else void propose();
-                        }}
-                      >
-                        {selected.status === 'queued' || busy === 'propose' ? (
-                          <LoaderCircle size={16} className="spin" />
-                        ) : (
-                          <ListChecks size={16} />
-                        )}
-                        {selected.status === 'queued'
-                          ? 'Applying changes'
-                          : activeProposal
-                            ? 'Review proposal'
-                            : 'Prepare resolution'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <div className="case-owner-row">
-                  <button className="owner-control" onClick={() => setModal('assign')}>
-                    <span className="small-avatar">{initials(selected.owner || 'Unassigned')}</span>
-                    <span>{selected.owner || 'Assign owner'}</span>
-                    <ChevronDown size={12} />
-                  </button>
-                  <span className="owner-divider" />
-                  <span className="reviewer-label">
-                    Reviewer <strong>{selected.reviewer || 'Unassigned'}</strong>
-                  </span>
-                  <span className="case-revision">Revision {selected.sourceRevision}</span>
-                </div>
-
-                <div
-                  className={`discrepancy-banner ${selected.status === 'resolved' ? 'is-resolved' : ''}`}
-                >
-                  <div className="discrepancy-symbol">
-                    {selected.status === 'resolved' ? (
-                      <CheckCheck size={23} />
-                    ) : (
-                      <CircleAlert size={23} />
-                    )}
-                  </div>
-                  <div>
-                    <span>
-                      {selected.status === 'resolved'
-                        ? 'Invoice exception resolved'
-                        : 'Quantity discrepancy'}
-                    </span>
-                    <strong>
-                      {selected.status === 'resolved'
-                        ? `${money(selectedTotals.netCents)} reconciled`
-                        : `${selectedTotals.missingUnits} units not yet received`}
-                    </strong>
-                    <p>
-                      {selected.status === 'resolved'
-                        ? `${selectedTotals.openPoUnits} units remain open on the purchase order.`
-                        : `${selected.invoicedUnits} invoiced · ${selectedTotals.receivedUnits} accepted · ${selected.sku}`}
-                    </p>
-                  </div>
-                  <div className="discrepancy-amount">
-                    {money(selectedTotals.discrepancyCents)}
-                    <span>
-                      {selected.status === 'resolved'
-                        ? 'remaining discrepancy'
-                        : 'current discrepancy'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="case-tabs">
-                  <div role="tablist" aria-label="Case details">
-                    <button
-                      role="tab"
-                      aria-selected={tab === 'evidence'}
-                      className={tab === 'evidence' ? 'active' : ''}
-                      onClick={() => setTab('evidence')}
-                    >
-                      <FileText size={15} />
-                      Evidence & resolution
-                    </button>
-                    <button
-                      role="tab"
-                      aria-selected={tab === 'activity'}
-                      className={tab === 'activity' ? 'active' : ''}
-                      onClick={() => setTab('activity')}
-                    >
-                      <History size={15} />
-                      Activity<span>{selected.history.length}</span>
-                    </button>
-                  </div>
-                  <a
-                    href={`/api/cases/${selected.id}/export?format=json`}
-                    className="export-link"
-                    download
-                  >
-                    <ArrowDownToLine size={14} />
-                    <span>Export</span>
-                  </a>
-                </div>
-
-                {tab === 'evidence' ? (
-                  <>
-                    <section className="matching-panel panel">
-                      <div className="section-title compact">
-                        <h3>Three-way match</h3>
-                        <span className="subtle-label">USD · {selected.sku}</span>
-                      </div>
-                      <div className="matching-table">
-                        <div className="matching-row matching-labels">
-                          <span>DOCUMENT</span>
-                          <span>UNITS</span>
-                          <span>AMOUNT</span>
-                        </div>
-                        <button
-                          className="matching-row"
-                          onClick={() => {
-                            setDocumentId(
-                              selected.documents.find((d) => d.kind === 'purchase_order')?.id ||
-                                null,
-                            );
-                            setEvidenceIndex(null);
-                          }}
-                        >
-                          <span>
-                            <span className="document-icon">
-                              <FileText size={15} />
-                            </span>
-                            Purchase order
-                          </span>
-                          <span>{selected.orderedUnits}</span>
-                          <span>{money(selected.orderedUnits * selected.unitPriceCents)}</span>
-                        </button>
-                        <button
-                          className="matching-row"
-                          onClick={() => {
-                            setDocumentId(
-                              selected.documents.find((d) => d.kind === 'invoice')?.id || null,
-                            );
-                            setEvidenceIndex(null);
-                          }}
-                        >
-                          <span>
-                            <span className="document-icon">
-                              <FileText size={15} />
-                            </span>
-                            Supplier invoice
-                          </span>
-                          <span>{selected.invoicedUnits}</span>
-                          <span>{money(selectedTotals.grossCents)}</span>
-                        </button>
-                        <button
-                          className="matching-row received-row"
-                          onClick={() => {
-                            setDocumentId(
-                              selected.documents.find((d) => d.kind === 'receipt')?.id || null,
-                            );
-                            setEvidenceIndex(null);
-                          }}
-                        >
-                          <span>
-                            <span className="document-icon">
-                              <PackageCheck size={15} />
-                            </span>
-                            Accepted receipts
-                          </span>
-                          <span>{selectedTotals.receivedUnits}</span>
-                          <span>{money(selectedTotals.receivedCents)}</span>
-                        </button>
-                        {selected.credits.length > 0 && (
-                          <div className="matching-row credit-row">
-                            <span>
-                              <span className="document-icon">
-                                <FileCheck2 size={15} />
-                              </span>
-                              Supplier credits
-                            </span>
-                            <span>
-                              {selectedTotals.pendingCreditCents > 0 ? 'Pending' : 'Applied'}
-                            </span>
-                            <span>
-                              −
-                              {money(
-                                selected.credits.reduce(
-                                  (sum, credit) => sum + credit.amountCents,
-                                  0,
-                                ),
-                              )}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="match-footer">
-                        <span>
-                          <ShieldCheck size={14} />
-                          Exact quantities · Zero tolerance
-                        </span>
-                        <button
-                          onClick={() => setModal('receipt')}
-                          disabled={!!busy || selected.status === 'resolved'}
-                        >
-                          <Plus size={14} />
-                          Add receipt
-                        </button>
-                      </div>
-                    </section>
-
-                    <div className="detail-columns">
-                      <section className="evidence-panel panel">
-                        <div className="section-title compact">
-                          <h3>
-                            Source documents{' '}
-                            <span className="count-badge">{selected.documents.length}</span>
-                          </h3>
-                          <button
-                            className="icon-button"
-                            aria-label="Upload supporting document"
-                            onClick={() => setModal('upload')}
-                          >
-                            <Upload size={16} />
-                          </button>
-                        </div>
-                        <div className="document-tabs">
-                          {selected.documents.map((doc) => (
-                            <button
-                              key={doc.id}
-                              onClick={() => {
-                                setDocumentId(doc.id);
-                                setEvidenceIndex(null);
-                              }}
-                              className={currentDocument?.id === doc.id ? 'active' : ''}
-                            >
-                              <FileText size={12} />
-                              <span>{documentLabels[doc.kind]}</span>
-                              {doc.status === 'pending' && (
-                                <LoaderCircle size={12} className="spin" />
-                              )}
-                              {doc.status === 'needs_review' && <CircleAlert size={12} />}
-                            </button>
-                          ))}
-                        </div>
-                        {currentDocument ? (
-                          <EvidenceDocument
-                            document={currentDocument}
-                            evidenceIndex={evidenceIndex}
-                            onEvidence={setEvidenceIndex}
-                            busy={!!busy}
-                            onRetry={() =>
-                              void action(
-                                { action: 'retry_document', documentId: currentDocument.id },
-                                'Document extraction queued for another attempt.',
-                              )
-                            }
-                          />
-                        ) : (
-                          <Empty
-                            title="No source documents"
-                            text="Upload a supporting record to attach source evidence to this case."
-                          />
-                        )}
-                        <button className="upload-inline" onClick={() => setModal('upload')}>
-                          <Upload size={14} />
-                          Add supporting document
-                          <Plus size={14} />
-                        </button>
-                      </section>
-
-                      <section className="resolution-panel panel">
-                        <div className="section-title compact">
-                          <h3>Next action</h3>
-                          <span className="step-label">
-                            {selected.status === 'resolved' ? 'COMPLETE' : 'HUMAN REVIEW'}
-                          </span>
-                        </div>
-                        <div className="resolution-body">
-                          {selected.status === 'resolved' ? (
-                            <>
-                              <div className="resolution-icon complete">
-                                <CheckCheck size={23} />
-                              </div>
-                              <h4>Ready for export</h4>
-                              <p>
-                                The applied credit and accepted receipts reconcile with the invoice.
-                                No payment has been made.
-                              </p>
-                              <div className="resolution-equation">
-                                <span>Invoice</span>
-                                <strong>{money(selectedTotals.grossCents)}</strong>
-                                <span>Applied credit</span>
-                                <strong>−{money(selected.appliedCreditCents)}</strong>
-                                <span className="equation-total">Reconciled amount</span>
-                                <strong className="equation-total">
-                                  {money(selectedTotals.netCents)}
-                                </strong>
-                              </div>
-                              <a
-                                className="button primary full"
-                                href={`/api/cases/${selected.id}/export?format=csv`}
-                                download
-                              >
-                                <ArrowDownToLine size={15} />
-                                Export reconciliation
-                              </a>
-                            </>
-                          ) : (
-                            <>
-                              <div className="resolution-icon">
-                                <ListChecks size={22} />
-                              </div>
-                              <h4>
-                                {selectedTotals.pendingCreditCents > 0
-                                  ? 'Reconcile supplier credit'
-                                  : selected.status === 'queued'
-                                    ? 'Applying approved changes'
-                                    : selected.status === 'on_hold'
-                                      ? 'Waiting on a supplier credit'
-                                      : activeProposal
-                                        ? 'Review proposed changes'
-                                        : 'Prepare a resolution'}
-                              </h4>
-                              <p>
-                                {selectedTotals.pendingCreditCents > 0
-                                  ? 'Review the credit against the latest receipts, then approve the resulting ledger change.'
-                                  : selected.status === 'queued'
-                                    ? 'The worker will apply the approved change and verify the resulting records.'
-                                    : selected.status === 'on_hold'
-                                      ? `${money(selected.heldCents)} is held in the internal ledger. Record a supplier credit when it arrives.`
-                                      : 'Review a precise action plan before any changes reach the internal ledger.'}
-                              </p>
-                              <div className="action-summary">
-                                <div>
-                                  <span>Internal hold</span>
-                                  <strong>{money(selected.heldCents)}</strong>
-                                </div>
-                                <div>
-                                  <span>Unapplied credit</span>
-                                  <strong>{money(selectedTotals.pendingCreditCents)}</strong>
-                                </div>
-                              </div>
-                              {selected.status === 'queued' ? (
-                                <div className="processing-label">
-                                  <LoaderCircle size={16} className="spin" />
-                                  Waiting for verified execution
-                                </div>
-                              ) : activeProposal ? (
-                                <button
-                                  className="button primary full"
-                                  onClick={() => {
-                                    setReview(activeProposal);
-                                    setReviewError('');
-                                  }}
-                                >
-                                  Review changes
-                                  <ArrowRight size={15} />
-                                </button>
-                              ) : (
-                                <button
-                                  className="button primary full"
-                                  onClick={() => void propose()}
-                                  disabled={!!busy}
-                                >
-                                  {busy === 'propose' ? (
-                                    <LoaderCircle size={15} className="spin" />
-                                  ) : (
-                                    <ListChecks size={15} />
-                                  )}
-                                  Prepare action plan
-                                </button>
-                              )}
-                              <button
-                                className="button secondary full"
-                                onClick={() => setModal('credit')}
-                                disabled={!!busy}
-                              >
-                                <Plus size={15} />
-                                Record supplier credit
-                              </button>
-                            </>
-                          )}
-                          <div className="resolution-footnote">
-                            <LockKeyhole size={12} />
-                            <span>Approval applies to the current evidence and policy.</span>
-                          </div>
-                        </div>
-                        {selected.proposals.length > 0 && (
-                          <div className="previous-proposals">
-                            <button onClick={() => setShowOldProposals(!showOldProposals)}>
-                              <History size={13} />
-                              Previous proposals
-                              <ChevronDown
-                                size={13}
-                                className={showOldProposals ? 'rotated' : ''}
-                              />
-                            </button>
-                            {showOldProposals &&
-                              [...selected.proposals].reverse().map((proposal) => (
-                                <button
-                                  className="old-proposal"
-                                  key={proposal.id}
-                                  onClick={() => {
-                                    setReview({ ...proposal });
-                                    setReviewError('');
-                                  }}
-                                >
-                                  <span>
-                                    Revision {proposal.sourceRevision}
-                                    <small>
-                                      {proposal.type === 'hold' ? 'Hold' : 'Reconcile'} ·{' '}
-                                      {proposal.status}
-                                    </small>
-                                  </span>
-                                  <strong>{money(proposal.amountCents)}</strong>
-                                  <ArrowUpRight size={13} />
-                                </button>
-                              ))}
-                          </div>
-                        )}
-                      </section>
-                    </div>
-                    {selected.tasks.length > 0 && (
-                      <section className="tasks-panel panel">
-                        <div className="section-title compact">
-                          <h3>Follow-up work</h3>
-                          <button className="text-button" onClick={() => setModal('assign')}>
-                            <Users size={14} />
-                            Assign
-                          </button>
-                        </div>
-                        {selected.tasks.map((task) => (
-                          <div className="task-row" key={task.id}>
-                            <span className={`task-check ${task.status === 'done' ? 'done' : ''}`}>
-                              {task.status === 'done' ? <Check size={12} /> : null}
-                            </span>
-                            <div>
-                              <strong>{task.title}</strong>
-                              <span>{task.owner || 'Unassigned'}</span>
-                            </div>
-                            <span className="subtle-label">
-                              {task.status === 'done' ? 'Complete' : 'Open'}
-                            </span>
-                          </div>
-                        ))}
-                      </section>
-                    )}
-                  </>
-                ) : (
-                  <CaseActivity
-                    record={selected}
-                    busy={!!busy}
-                    onRetry={(commandId) =>
-                      void action(
-                        { action: 'retry', commandId },
-                        'Execution request checked. Existing completed writes will not be duplicated.',
-                      )
-                    }
-                  />
-                )}
-                <footer className="case-footer">
-                  <span>
-                    <ShieldCheck size={13} />
-                    Persisted records. Inspectable decisions.
-                  </span>
-                  <span>
-                    Source r{selected.sourceRevision} · Ledger r{selected.ledgerRevision}
-                  </span>
-                </footer>
-              </section>
-            ) : (
-              <section className="empty-workspace panel">
-                <Empty
-                  title="Your next resolution starts here"
-                  text="Create a case with an invoice, purchase order, and accepted quantity."
-                />
-                <button className="button primary" onClick={() => setModal('create')}>
-                  <Plus size={16} />
-                  Create case
-                </button>
-              </section>
-            )}
-          </div>
-        )}
-        <footer className="page-footer">
-          <span>
-            SHORTFALL <span className="footer-slash">/</span> FINANCE OPERATIONS
-          </span>
-          <span>Built for the work between systems.</span>
-        </footer>
-      </main>
+      {showWelcome ? (
+        <WorkspaceEntry
+          canContinue={hasEntered}
+          onExplore={() => enterWorkspace('sample')}
+          onCreate={() => enterWorkspace('own')}
+          onContinue={() => setShowWelcome(false)}
+        />
+      ) : (
+        <OperationsConsole
+          onGuide={() => setShowWelcome(true)}
+          guideVisible={guideVisible}
+          onHideGuide={() => setGuideVisible(false)}
+          workspace={workspace}
+          selected={selected}
+          visibleCases={visibleCases}
+          caseTotals={selectedTotals}
+          totalDiscrepancy={totalDiscrepancy}
+          view={view}
+          onView={setView}
+          search={search}
+          onSearch={setSearch}
+          filter={filter}
+          onFilter={setFilter}
+          busy={busy}
+          notice={!modal && !review ? notice : null}
+          dismissNotice={() => setNotice(null)}
+          onModal={(name) => {
+            setNotice(null);
+            setModal(name);
+          }}
+          onRefresh={() =>
+            void refresh().catch((error) => setNotice({ kind: 'error', message: error.message }))
+          }
+          onSelect={(record) => void selectCase(record)}
+          mobileCase={mobileCase}
+          onBack={() => setMobileCase(false)}
+          tab={tab}
+          onTab={setTab}
+          currentDocument={currentDocument}
+          onDocument={(id) => {
+            setDocumentId(id);
+            setEvidenceIndex(null);
+          }}
+          renderEvidence={(document) => (
+            <EvidenceDocument
+              document={document}
+              evidenceIndex={evidenceIndex}
+              onEvidence={setEvidenceIndex}
+              busy={!!busy}
+              onRetry={() =>
+                void action(
+                  { action: 'retry_document', documentId: document.id },
+                  'Document extraction queued for another attempt.',
+                )
+              }
+            />
+          )}
+          renderActivity={(record) => (
+            <CaseActivity
+              record={record}
+              busy={!!busy}
+              onRetry={(commandId) =>
+                void action(
+                  { action: 'retry', commandId },
+                  'Execution request checked. Existing completed writes will not be duplicated.',
+                )
+              }
+            />
+          )}
+          activeProposal={activeProposal}
+          onReview={(proposal) => {
+            setReview(proposal);
+            setReviewError('');
+          }}
+          onPropose={() => void propose()}
+          showOldProposals={showOldProposals}
+          onToggleOld={() => setShowOldProposals((shown) => !shown)}
+        />
+      )}
 
       {modal && (
         <Dialog
@@ -1606,6 +912,17 @@ export function ShortfallApp() {
               )}
               {modal === 'upload' && (
                 <>
+                  <div className="upload-case-context">
+                    <span>DOCUMENTS MUST MATCH THIS CASE</span>
+                    <strong>{selected?.supplier}</strong>
+                    <p>
+                      {selected?.poNumber} · {selected?.invoiceNumber} · Item {selected?.sku} · USD
+                    </p>
+                    <p>
+                      Include these identifiers in the source. Enter the reference exactly as
+                      printed on the document.
+                    </p>
+                  </div>
                   <Field label="Document type">
                     <select name="kind" defaultValue="receipt">
                       <option value="receipt">Goods receipt</option>
@@ -1633,47 +950,68 @@ export function ShortfallApp() {
                       required
                     />
                   </Field>
-                  <div className="sample-downloads">
-                    <span>SYNTHETIC NORTHSTAR DOCUMENTS</span>
-                    <a
-                      href="/samples/receipt-late.txt"
-                      download
-                      onClick={(event) => {
-                        const form = event.currentTarget.closest('form');
-                        const kind = form?.elements.namedItem('kind') as HTMLSelectElement;
-                        const reference = form?.elements.namedItem('reference') as HTMLInputElement;
-                        if (kind && reference) {
-                          kind.value = 'receipt';
-                          reference.value = 'RCV-2042';
-                        }
-                      }}
-                    >
-                      <ArrowDownToLine size={13} />
-                      Late receipt · RCV-2042
-                    </a>
-                    <a
-                      href="/samples/credit-note.txt"
-                      download
-                      onClick={(event) => {
-                        const form = event.currentTarget.closest('form');
-                        const kind = form?.elements.namedItem('kind') as HTMLSelectElement;
-                        const reference = form?.elements.namedItem('reference') as HTMLInputElement;
-                        if (kind && reference) {
-                          kind.value = 'credit';
-                          reference.value = 'CN-8821-01';
-                        }
-                      }}
-                    >
-                      <ArrowDownToLine size={13} />
-                      Supplier credit · CN-8821-01
-                    </a>
-                    <p>
-                      These files match Northstar, PO-1042. Download the late receipt first; the
-                      link fills its type and reference. Select the downloaded file above, then
-                      upload it to run extraction. After the discrepancy reaches $400, repeat with
-                      the supplier credit.
-                    </p>
-                  </div>
+                  {selected?.poNumber === 'PO-1042' &&
+                  selected?.supplier.toLowerCase().includes('northstar') ? (
+                    <div className="sample-downloads">
+                      <span>SYNTHETIC NORTHSTAR DOCUMENTS</span>
+                      <a
+                        href="/samples/receipt-late.txt"
+                        download
+                        onClick={(event) => {
+                          const form = event.currentTarget.closest('form');
+                          const kind = form?.elements.namedItem('kind') as HTMLSelectElement;
+                          const reference = form?.elements.namedItem(
+                            'reference',
+                          ) as HTMLInputElement;
+                          if (kind && reference) {
+                            kind.value = 'receipt';
+                            reference.value = 'RCV-2042';
+                          }
+                        }}
+                      >
+                        <ArrowDownToLine size={13} />
+                        Late receipt · RCV-2042
+                      </a>
+                      <a
+                        href="/samples/credit-note.txt"
+                        download
+                        onClick={(event) => {
+                          const form = event.currentTarget.closest('form');
+                          const kind = form?.elements.namedItem('kind') as HTMLSelectElement;
+                          const reference = form?.elements.namedItem(
+                            'reference',
+                          ) as HTMLInputElement;
+                          if (kind && reference) {
+                            kind.value = 'credit';
+                            reference.value = 'CN-8821-01';
+                          }
+                        }}
+                      >
+                        <ArrowDownToLine size={13} />
+                        Supplier credit · CN-8821-01
+                      </a>
+                      <p>
+                        These files match Northstar, PO-1042. Download the late receipt first; the
+                        link fills its type and reference. Select the downloaded file above, then
+                        upload it to run extraction. After the discrepancy reaches $400, repeat with
+                        the supplier credit.
+                      </p>
+                    </div>
+                  ) : (
+                    <details className="source-template">
+                      <summary>Required source fields</summary>
+                      <p>
+                        Use your own TXT, CSV, JSON, or text PDF. Northstar sample downloads belong
+                        to the sample case and will not match this case.
+                      </p>
+                      <pre>{`Document type: Goods receipt (or invoice, purchase order, supplier credit)\nSupplier: ${selected?.supplier}\nPurchase order: ${selected?.poNumber}\nInvoice: ${selected?.invoiceNumber}\nItem: ${selected?.sku}\nCurrency: USD\nReference: [the document's unique reference]\nAccepted quantity: [newly received whole units, for a receipt]\nCredit amount: [USD amount, for a supplier credit]`}</pre>
+                      <p>
+                        For an invoice or purchase order, include the whole-unit quantity, unit
+                        price, and total. Replace the bracketed fields with the actual values for
+                        your document.
+                      </p>
+                    </details>
+                  )}
                   {!workspace?.service.inferenceEnabled && (
                     <p className="form-note warning-text">
                       Document extraction is not configured. You can use manual receipt and credit
@@ -2014,6 +1352,12 @@ function EvidenceDocument({
           <CircleAlert size={16} />
           {document.extractionError}
         </div>
+      )}
+      {document.status === 'needs_review' && (
+        <p className="document-recovery">
+          Replace with a corrected document using the same type and reference. Retry extraction is
+          for a temporary extraction failure.
+        </p>
       )}
       {document.status === 'needs_review' && (
         <button

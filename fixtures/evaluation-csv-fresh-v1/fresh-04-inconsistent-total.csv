@@ -1,0 +1,2 @@
+document_type,reference,supplier,purchase_order,invoice_number,item,quantity,unit_price_usd,total_usd,currency
+invoice,SM-INV-720,Solace Manufacturing,PO-SM-720,SM-INV-720,SM-CLIP,8,12.50,99.00,USD

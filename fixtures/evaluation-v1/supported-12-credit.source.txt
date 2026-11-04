@@ -1,0 +1,13 @@
+{
+  "synthetic": true,
+  "document_type": "credit",
+  "reference": "CN-PO-ML-916",
+  "supplier": "Marlowe Lab Supply",
+  "purchase_order": "PO-ML-916",
+  "invoice_number": "ML-INV-916",
+  "item": "ML-TUBE",
+  "quantity": 10,
+  "unit_price_usd": "1.99",
+  "total_usd": "19.90",
+  "currency": "USD"
+}

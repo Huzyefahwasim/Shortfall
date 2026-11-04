@@ -1,0 +1,11 @@
+SYNTHETIC BUSINESS RECORD
+Document: credit
+Reference: CN-PO-AT-731
+Supplier: Atlas Fasteners
+Purchase order: PO-AT-731
+Invoice number: AT-INV-731
+Item identifier: AF-M8
+Quantity: 5
+Unit price: USD 12.50
+Total: USD 62.50
+Currency: USD

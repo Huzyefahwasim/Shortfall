@@ -1,0 +1,11 @@
+SYNTHETIC BUSINESS RECORD
+Document: invoice
+Reference: ML-INV-916
+Supplier: Marlowe Lab Supply
+Purchase order: PO-ML-916
+Invoice number: ML-INV-916
+Item identifier: ML-TUBE
+Quantity: 120
+Unit price: USD 1.99
+Total: USD 238.80
+Currency: USD

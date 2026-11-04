@@ -1,0 +1,2 @@
+document_type,reference,supplier,purchase_order,invoice_number,item,quantity,unit_price_usd,total_usd,currency
+invoice,LS-INV-284,Linden Safety,PO-LS-284,LS-INV-284,LS-VEST,32,49.95,1598.40,USD

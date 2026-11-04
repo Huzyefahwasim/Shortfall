@@ -63,6 +63,7 @@ services:
       SITE_HOST: ${SITE_HOST:?Public hostname required}
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./submission-public:/srv/submission:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:

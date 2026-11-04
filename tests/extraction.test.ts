@@ -113,6 +113,83 @@ test('negative or fractional source quantities require review', () => {
   }
 });
 
+test('CSV numeric evidence respects cells and hyphenated identifiers', () => {
+  const raw = fixture();
+  const header = 'reference,supplier,po,sku,quantity,unit_price,total,currency';
+  const row = 'INV-1001,Harbour Tools,PO-1001,WIDGET-01,120,40.00,"4,800.00",USD';
+  const source = `${header}\n${row}`;
+  raw.evidence = raw.evidence.map((item) => ({ ...item, quote: row }));
+  const result = validateExtraction(raw, source, 'invoice');
+  assert.equal(result.quantity, 120);
+  assert.equal(result.totalCents, 480_000);
+  for (const evidence of result.evidence)
+    assert.equal(source.slice(evidence.start, evidence.end), evidence.quote);
+});
+
+test('CSV numeric evidence cannot erase a negative sign or fractional quantity', () => {
+  for (const quantity of ['-120', '120.5']) {
+    const raw = fixture();
+    const row = `INV-1001,Harbour Tools,PO-1001,WIDGET-01,${quantity},40.00,4800.00,USD`;
+    const source = `reference,supplier,po,sku,quantity,unit_price,total,currency\n${row}`;
+    raw.evidence = raw.evidence.map((item) => ({ ...item, quote: row }));
+    assert.throws(() => validateExtraction(raw, source, 'invoice'), /stated quantity/);
+  }
+  const raw = fixture();
+  const row = 'INV-1001,Harbour Tools,PO-1001,WIDGET-01,120,-40.00,-4800.00,USD';
+  raw.evidence = raw.evidence.map((item) => ({ ...item, quote: row }));
+  assert.throws(
+    () =>
+      validateExtraction(
+        raw,
+        `reference,supplier,po,sku,quantity,unit_price,total,currency\n${row}`,
+        'invoice',
+      ),
+    /stated unitPriceCents/,
+  );
+});
+
+test('CSV delimiters do not merge adjacent quantity and price cells', () => {
+  const raw = fixture();
+  raw.quantity = 1;
+  raw.unitPriceCents = 10_000;
+  raw.totalCents = 10_000;
+  const row = 'INV-1001,Harbour Tools,PO-1001,WIDGET-01,1,100.00,100.00,USD';
+  raw.evidence = raw.evidence.map((item) => ({
+    ...item,
+    value: String(raw[item.field as keyof ExtractionFields]),
+    quote: row,
+  }));
+  assert.equal(
+    validateExtraction(
+      raw,
+      `reference,supplier,po,sku,quantity,unit_price,total,currency\n${row}`,
+      'invoice',
+    ).quantity,
+    1,
+  );
+});
+
+test('CSV evidence cannot borrow a quantity to conceal a negative unit price', () => {
+  const raw = fixture();
+  raw.quantity = 40;
+  raw.totalCents = 160_000;
+  const row = 'INV-1001,Harbour Tools,PO-1001,WIDGET-01,40,-40.00,1600.00,USD';
+  raw.evidence = raw.evidence.map((item) => ({
+    ...item,
+    value: String(raw[item.field as keyof ExtractionFields]),
+    quote: row,
+  }));
+  assert.throws(
+    () =>
+      validateExtraction(
+        raw,
+        `reference,supplier,po,sku,quantity,unit_price,total,currency\n${row}`,
+        'invoice',
+      ),
+    /stated unitPriceCents/,
+  );
+});
+
 test('receipts may omit invoice and money fields but not receiving evidence', () => {
   const raw = fixture();
   raw.kind = 'receipt';

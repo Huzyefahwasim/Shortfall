@@ -1,0 +1,30 @@
+{
+  "title": "Shortfall: invoice exception workbench",
+  "shortDescription": "Resolve invoice quantity discrepancies with cited evidence, approvals tied to current records, and durable execution. Shortfall runs on Vultr and tracks a case from a late receipt through an approved supplier credit.",
+  "longDescription": "Shortfall helps accounts payable reviewers resolve invoices for goods their receiving team has not accepted. Each case combines source evidence, assigned follow-up work, a proposed internal ledger change, approval, and execution history.\n\nThe key behavior is approval validity when evidence changes. In the synthetic demonstration, an invoice bills 120 units at $40, while receiving records show 100. A late receipt adds ten units and changes the discrepancy from $800 to $400. Shortfall rejects the old approval. After the reviewer approves the revised hold and a verified $400 supplier credit, the worker reconciles the invoice to $4,400 while keeping ten purchase-order units open.\n\nVultr hosts the Next.js application, API, PostgreSQL database, and durable worker. Claude Opus 5.5 extracts fields and exact source quotes; code validates evidence, calculates money, checks current approval versions, and applies idempotent changes. The deployed workflow, restart recovery, backup restoration, and budget limits have been exercised.\n\nThe frozen 24-document evaluation accepted 9/12 supported documents exactly and sent three CSVs to review; all 12 challenge expectations passed. After a CSV validation correction, the three targeted reruns passed. A separate fresh four-CSV check accepted two supported documents and withheld two as expected. These small synthetic sets are reported separately.\n\nThe prototype supports independent cases, text-based documents, USD, whole units, and one invoice per supplier/purchase order. It uses synthetic data and an internal ledger, with no payments or ERP writes. The target buyer is a distributor's finance manager. Operator interviews, authenticated roles, and an accounting connector are next; customer demand and a proposed $99 monthly pilot price remain unvalidated.",
+  "challenge": "02 · Future of Work",
+  "participationMode": "Online",
+  "demoPlatform": "Vultr Cloud Compute",
+  "demoUrl": "https://shortfall.95.179.254.189.sslip.io",
+  "repositoryUrl": "https://github.com/Huzyefahwasim/vultr-hackathon",
+  "suggestedCategories": [
+    "Finance & Accounting",
+    "Future of Work",
+    "Workflow Automation"
+  ],
+  "suggestedTechnologies": [
+    "Vultr",
+    "Anthropic Claude Opus 5.5",
+    "Next.js",
+    "TypeScript",
+    "PostgreSQL",
+    "Docker Compose",
+    "Caddy"
+  ],
+  "creator": "Huzyefah Wasim",
+  "team": "Solo full-stack developer",
+  "videoUrl": null,
+  "slidesPdfUrl": null,
+  "coverImageUrl": null,
+  "note": "Use the categories available in the actual event form. Null media URLs mean the final public asset has not yet been supplied."
+}

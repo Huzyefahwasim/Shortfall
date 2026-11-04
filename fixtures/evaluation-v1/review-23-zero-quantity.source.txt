@@ -1,0 +1,8 @@
+SYNTHETIC BUSINESS RECORD
+Document: receipt
+Reference: GR-CW-500
+Supplier: Cedar Workshop
+Purchase order: PO-CW-500
+Item identifier: CW-PLATE
+Quantity: 0
+Currency: USD

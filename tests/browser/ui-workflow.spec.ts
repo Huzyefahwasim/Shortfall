@@ -5,6 +5,7 @@ test('reviewer completes the receipt and credit workflow through the interface',
 }) => {
   test.setTimeout(120000);
   await page.goto('/');
+  await page.getByRole('button', { name: /Explore a sample case/ }).click({ timeout: 45000 });
   await expect(page.getByRole('heading', { name: 'The exception desk' })).toBeVisible({
     timeout: 45000,
   });
@@ -45,9 +46,11 @@ test('reviewer completes the receipt and credit workflow through the interface',
 test('mobile queue and case controls fit the viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await page.getByRole('button', { name: /Explore a sample case/ }).click({ timeout: 45000 });
   await expect(page.getByRole('heading', { name: 'The exception desk' })).toBeVisible({
     timeout: 45000,
   });
+  await page.getByRole('button', { name: 'Back to cases', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Invoice exception queue' })).toBeVisible();
   await page.getByRole('button', { name: /Northstar Components/ }).click();
   await expect(page.getByRole('button', { name: 'Back to cases', exact: true })).toBeVisible();

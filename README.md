@@ -20,6 +20,8 @@ The first release supports one invoice per supplier/purchase-order pair, one ite
 
 ## Try the sample
 
+Open the application in a fresh browser and choose **Explore a sample case**. The guided case explains each next action. Choose **Create your own case** to enter an independent invoice; no account, API key, or installation is required. The **Guide** control reopens the entry instructions. [Judge quickstart](docs/submission/judge-quickstart.md)
+
 Northstar Components invoices 120 units at $40: **$4,800**. The first receipt confirms 100 units, leaving an **$800** discrepancy. A later receipt adds 10 units. Shortfall rejects the previous $800 approval and proposes **$400** instead.
 
 Approve the revised internal hold, then upload the supplied $400 credit note and approve reconciliation. The net invoice becomes **$4,400**; the purchase order still has **10 units outstanding**. The application records no payment. See the [four-minute demonstration](docs/demo.md) and samples under public/samples.
@@ -97,9 +99,13 @@ Generate route types before typechecking a clean checkout. The database test nee
 
 The [CI workflow](.github/workflows/ci.yml) runs isolated PostgreSQL tests, route generation, typechecking, a production build, and Chromium workflows with inference disabled. The [first hosted run passed](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41763975019): 41 tests and five API/browser workflows.
 
-The latest deterministic suite recorded **40 passes and one database test skipped** without database configuration; that database integration test then **passed separately**, including competing reservations at the global/workspace ceilings. All **three API workflow tests and two browser tests passed on the public deployment**. Production build, restart/persistence, and isolated backup restoration passed. Live Opus extraction completed the $4,400 reconciliation and rejected the stale approval. These checks are prototype evidence, not an extraction-accuracy study. [Results](docs/evaluation.md)
+The current regular suite contains **51 tests: 50 passed and one database test skipped** without database configuration. The database integration test **passed separately**, including competing reservations at the global/workspace ceilings. Full typechecking and formatting checks passed. The latest public run passed **three API workflow tests and two browser tests in 18.3 seconds**, including fresh own-case entry, the guide, persistence, isolation, and mobile behavior. Production build, restart/persistence, and isolated backup restoration passed. Live Opus extraction completed the $4,400 reconciliation and rejected the stale approval; an additional deployed CSV upload verified nine source spans and the expected $22.50 hold. [Workflow verification](docs/evaluation.md)
 
-A captioned recording of the actual public workflow passed its checks and runs 1 minute 53.16 seconds. It has no audio and remains a local draft, not the published submission video. The reusable recorder is scripts/record-demo.mjs; scripts/smoke-recovery.mjs supports prepare and verify phases for the restart check.
+A captioned capture of the public workflow passed its checks. The final presentation adds synthesized narration and the measured evaluation; public MP4 and cover delivery remain pending verification. See the [demonstration and media status](docs/demo.md), [narration source and voice credits](docs/submission/media-notes.md), and [slide content and speaker notes](docs/submission/slide-content.md). The reusable recorder is scripts/record-demo.mjs; scripts/smoke-recovery.mjs supports prepare and verify phases for the restart check.
+
+## Document evaluation
+
+The frozen 24-document baseline accepted 9/12 supported documents exactly and sent three valid CSVs to review; all 12 challenge expectations passed. After a validator correction, three targeted reruns passed, followed by four fresh CSV cases with expected outcomes. These are project-authored synthetic records with no independent reviewer. The [full document evaluation](docs/evaluation-results.md) preserves the separate sets: 28 unique documents, 31 settled calls, and $0.474656.
 
 ## API budget
 
@@ -115,5 +121,7 @@ PostgreSQL reserves $0.09 per generation attempt. Admission stops before committ
 - [Evaluation](docs/evaluation.md)
 - [Delivery and submission](docs/delivery-plan.md)
 - [Model and budget](docs/inference-budget.md)
+- [Judge quickstart](docs/submission/judge-quickstart.md)
+- [Submission fields and media](docs/submission/entry.json)
 
 Application code is licensed under the [MIT License](LICENSE). Font notices: [DM Sans](docs/licenses/dm-sans.txt) and [Instrument Serif](docs/licenses/instrument-serif.txt).
