@@ -63,9 +63,11 @@ Local snapshot on 4 November 2026, using synthetic documents and real provider r
 | Supplier credit | 1,468 | 562 | 5,672 ms | $0.017112 |
 | Successful pair | 2,868 | 860 | Not an end-to-end timing | $0.028672 |
 
-These are one successful sample per kind, not a latency distribution or accuracy benchmark. After the public smoke and recorded walkthrough on 4 November, nine settled calls totaled $0.113060; two uncertain reservations retained $0.18. These application records are not a reconciled provider invoice. Further testing changes the totals.
+These are one successful sample per kind, not a latency distribution or accuracy benchmark. The current application-ledger snapshot on **4 November 2026** contains **43 settled calls totaling $0.633212**, plus **two uncertain reservations retaining $0.18**. Committed usage and retained reservations therefore total $0.813212 against the $40 admission cap. These application records are not a reconciled provider invoice; further use changes the totals.
 
-The full smoke verified 110 received units, stale $800 approval rejection, a $400 internal hold, approved $400 credit/release, a $4,400 net invoice, and ten open PO units. The public Vultr replay and recorded walkthrough passed the same checks; their calls are included in the aggregate above. [Evaluation](evaluation.md)
+The full smoke verified 110 received units, stale $800 approval rejection, a $400 internal hold, approved $400 credit/release, a $4,400 net invoice, and ten open PO units. The public Vultr replay and recorded walkthrough passed the same checks; their calls are included in the application total above. [Workflow verification](evaluation.md)
+
+The separately reported document evaluation is a subset of that application usage: **31 settled calls and $0.474656 across 28 unique synthetic documents**, with no uncertain usage in the evaluation itself. Keep this frozen evaluation total separate from later smoke runs and recording calls. [Document evaluation](evaluation-results.md)
 
 ## Configuration and failures
 

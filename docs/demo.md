@@ -2,16 +2,15 @@
 
 Open [Shortfall](https://shortfall.95.179.254.189.sslip.io) in a fresh private browser window. Choose **Explore a sample case**; the **Guide** control reopens entry instructions. **Create your own case** opens explicit business-field intake. No account, API key, environment file, or installation is required.
 
-The public Vultr application, three API checks, two browser checks, and live receipt/credit extraction have passed. The source capture uses real application actions. The final presentation combines that capture with synthesized narration and repository evidence. Public video and cover delivery are **pending verification**:
+The public Vultr application, three API checks, two browser checks, and live receipt/credit extraction have passed. The [published presentation](https://shortfall.95.179.254.189.sslip.io/submission/) uses real application actions, synthesized narration, and repository evidence. It runs **252.24 seconds (4:12)** at 1600 × 900, 25 fps, and is **15,884,185 bytes**. Technical encoding, delivery, browser playback, all eight seek points, and readable captions are verified.
 
-- Planned MP4: [submission/demo.mp4](https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4)
-- Planned cover: [submission/cover.png](https://shortfall.95.179.254.189.sslip.io/submission/cover.png)
+- [MP4](https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4), [cover](https://shortfall.95.179.254.189.sslip.io/submission/cover.png), and [captions](https://shortfall.95.179.254.189.sslip.io/submission/captions.vtt)
 - [Narration](submission/narration.txt), [timing cues](submission/narration-timing.json), and [media credits](submission/media-notes.md)
 - [Slide content and speaker notes](submission/slide-content.md); export the presentation as PDF for submission
 
 ## Run of show
 
-These are editing targets for an approximately four-minute presentation, not measurements of application response time. Use actual application and repository pages. Preserve visible waiting states and identify elapsed-time cuts.
+These are scene planning targets, not exact chapter markers or measurements of application response time. The final presentation runs 4:12. Recorded actions retain their original speed. Only 4.88 seconds of idle capture-close time were removed; narration was normalized separately.
 
 | Time | Action | Visible evidence |
 | --- | --- | --- |
@@ -44,7 +43,7 @@ The frozen 24-document baseline accepted 9/12 supported documents exactly and se
 
 Across those separate sets: **28 unique synthetic documents, 31 settled calls, $0.474656**, with no uncertain usage. These are project-authored records with no independent reviewer. Keep the baseline, regression, and fresh holdout separate; do not present a combined accuracy percentage. [Full evaluation](evaluation-results.md)
 
-The regular test run recorded 50 passes and one unconfigured database test skipped; the database integration test passed separately. Full typechecking and formatting checks passed. The latest public run passed three API and two browser tests in 18.3 seconds, including fresh own-case entry, the guide, persistence, visitor isolation, and mobile behavior. An additional deployed CSV upload verified nine exact evidence spans and the expected $22.50 hold. Restart/container replacement, isolated database restoration, and concurrent spending limits were exercised. [Workflow verification](evaluation.md)
+The regular test run recorded 50 passes and one unconfigured database test skipped; the database integration test passed separately. Full typechecking and formatting checks passed. The latest public suite passed three API and two browser tests in 18.3 seconds. Additional public checks covered fresh own-case entry, the guide, persistence, visitor isolation, and desktop/mobile presentation. An additional deployed CSV upload verified nine exact evidence spans and the expected $22.50 hold. Restart/container replacement, isolated database restoration, and concurrent spending limits were exercised. [Workflow verification](evaluation.md)
 
 The application persists internal ledger changes and follow-up tasks. It does not make payments, update an ERP, or contact suppliers. The sample demonstrates a $400 discrepancy resolved, not recovered cash or measured customer savings.
 
@@ -52,4 +51,4 @@ The application persists internal ledger changes and follow-up tasks. It does no
 
 If extraction fails, show its review state. A corrected source should be uploaded using the same document type/reference; retrying an unchanged file does not add missing facts. A manual-entry walkthrough can demonstrate the deterministic workflow and must be described as manual entry. Keep model use within the remaining allowance.
 
-Before submission, check MP4 playback, audible narration, captions, source amounts, file size, and public links. Standard guidance requires MP4/MOV up to 300 MB and PDF slides; the event form takes precedence. See [submission rules](submission/rules-and-sources.md) and the [judge quickstart](submission/judge-quickstart.md).
+Playback and readability review confirmed the $800 obsolete proposal, $400 current amount, $4,400 net invoice, ten open PO units, and closing credit. The published player returned no JavaScript or media errors. Presentation PDF and event-form completion remain. Standard guidance requires MP4/MOV up to 300 MB and PDF slides; the event form takes precedence. See [submission rules](submission/rules-and-sources.md) and the [judge quickstart](submission/judge-quickstart.md).

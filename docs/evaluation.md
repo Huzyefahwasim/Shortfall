@@ -7,19 +7,22 @@ Results snapshot: 4 November 2026. These results cover local checks and the publ
 | Check | Observed result | Scope |
 | --- | --- | --- |
 | TypeScript and formatting | Passed | Whole repository typecheck and formatting check |
+| Hosted CI for eda293e | Passed | All 51 tests including database integration, five API/browser workflows, formatting, typechecking, and production build |
 | Regular test suite | 50 passed; one database test skipped without configuration | Domain, extraction, budget arithmetic, origin checks, PDF parsing, four PCM alignment tests, and related deterministic checks |
 | Database integration | Passed separately | Ownership, competing approvals/execution, source serialization, reset accounting, retries, expiry/session limits, and concurrent global/workspace budget admission |
 | API workflow tests | Three passed locally and on the public deployment | Stale approval, credit reconciliation, duplicate execution, cross-session/origin checks, and a new independent case |
-| Browser tests | Two passed locally and on the public deployment | Fresh own-case entry, guide, manual receipt/credit flow, export, refresh persistence, visitor isolation, and mobile viewport behavior |
+| Browser tests | Two passed locally and on the public deployment | Manual receipt/credit flow, export, refresh persistence, and mobile viewport behavior |
+| Additional public usability checks | Passed separately from the five-test suite | Fresh own-case entry, Guide, persistence, visitor isolation, and desktop/mobile presentation |
 | Live Opus workflow | Passed locally and on the public deployment | Sample receipt and credit uploads, validated evidence, stale approval rejection, worker execution, and final reconciliation |
 | Additional deployed CSV smoke | Passed | Live Opus upload, nine exact evidence spans, and expected 2,250-cent hold |
 | Production build and deployment | Passed | Linux production build, public HTTPS, fresh session, database health, and worker heartbeat |
 | Public visual check | Passed | Desktop/mobile screenshots, no reported browser errors or horizontal overflow |
 | Restart/container replacement | Passed publicly | Queued hold and session persisted; replay produced one execution, one task, and 80,000 cents held |
 | Backup restoration | Passed in an isolated temporary database | Nine tables, 34 cases, and seven budget reservations restored; temporary database removed and application database unchanged |
-| Recorded public workflow | Passed | 1 minute 53.16 seconds, captioned WebM without audio; local draft, not a published final submission |
+| Recorded public workflow | Passed | 54 recording cues, 15 exact live source quotes, and correct reconciled ledger/export |
+| Published presentation | Delivery, technical metadata, playback, seek points, and readability verified | MP4: 252.24 seconds, 1600 × 900, 25 fps, H.264/AAC, 15,884,185 bytes; public cover and 54 VTT cues; no JavaScript/media errors |
 
-The current local regular suite and separate database run together exercised 51 tests. The latest deployed API/browser run passed all five tests in 18.3 seconds. The earlier [hosted CI run](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41763975019) passed the then-current 41 tests in one invocation, followed by five API/browser tests on Chromium. Browser tests use manual entry and do not claim live inference coverage. The separate live smoke calls the provider.
+The current local regular suite and separate database run together exercised 51 tests. The latest deployed API/browser run passed all five tests in 18.3 seconds. The [hosted CI run for eda293e](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41770157593) then passed all 51 tests, including the configured database integration test, followed by five API/browser workflows, formatting, typechecking, and a production build. Browser tests use manual entry and do not claim live inference coverage. The separate live smoke calls the provider.
 
 ## Live extraction snapshot
 
@@ -92,9 +95,12 @@ Evidence checks require exact unique source quotes, server-calculated offsets, m
 - [x] Exercise concurrent budget admission against PostgreSQL and confirm the global cap across workspaces.
 - [x] Recheck fresh public own-case entry, guide access, visitor isolation, persistence, and mobile behavior on the deployed build.
 - [x] Check expiry/session limits, upload boundaries, and failure states in database integration.
-- [ ] Finish presentation PDF, final video hosting, and submission-link verification. Narration is generated; public final media remains pending verification.
+- [x] Verify public repository access and the passing hosted CI run.
+- [x] Publish the narrated MP4, cover, and captions and verify delivery/technical metadata.
+- [x] Complete browser playback and caption/readability review across all eight seek points.
+- [ ] Complete presentation PDF and final event-form verification.
 
-The deployed restart and isolated restoration were exercised, not inferred from local retry tests or the existence of a dump. The historical hosted CI run passed its then-current typecheck, production build, 41 tests, and five browser/API workflows; current counts are recorded above.
+The deployed restart and isolated restoration were exercised, not inferred from local retry tests or the existence of a dump. Public repository access, media delivery, and browser playback are verified. The presentation PDF and event form remain. [Media details](submission/media-notes.md)
 
 ## Document-quality evaluation
 

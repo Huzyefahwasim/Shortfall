@@ -41,11 +41,11 @@ Buyer and $99/month pilot pricing are hypotheses. No customer interviews, adopti
 ## Final checklist
 
 - [ ] Confirm enrollment, exact deadline/timezone, and any event-form changes.
-- [ ] Keep public demo and repository accessible without the presenter's session.
-- [ ] Verify fresh onboarding, sample documents, a new independent case, and documented limits.
-- [ ] Provide the MP4/MOV presentation and cover.
+- [x] Verify public demo and repository access without the presenter's session.
+- [x] Verify fresh onboarding, sample documents, a new independent case, and documented limits.
+- [x] Provide the MP4/MOV presentation and cover.
 - [ ] Export the presentation as PDF and attach it to the submission.
-- [ ] Verify media duration, file size, narration clarity, and readable source amounts.
+- [x] Verify media duration, file size, narration clarity, and readable source amounts.
 - [ ] Keep the frozen baseline, targeted CSV regression, and fresh CSV holdout separate in presented results.
 - [ ] Use actual form options for track and technology tags.
 - [ ] Check all required fields and final public media URLs before submitting.

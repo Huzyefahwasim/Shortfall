@@ -23,8 +23,10 @@
   ],
   "creator": "Huzyefah Wasim",
   "team": "Solo full-stack developer",
-  "videoUrl": null,
+  "videoUrl": "https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4",
   "slidesPdfUrl": null,
-  "coverImageUrl": null,
-  "note": "Use the categories available in the actual event form. Null media URLs mean the final public asset has not yet been supplied."
+  "coverImageUrl": "https://shortfall.95.179.254.189.sslip.io/submission/cover.png",
+  "note": "Use the categories available in the actual event form. Public media delivery, metadata, playback, and caption readability are verified. The presentation PDF must still be supplied.",
+  "presentationUrl": "https://shortfall.95.179.254.189.sslip.io/submission/",
+  "captionsUrl": "https://shortfall.95.179.254.189.sslip.io/submission/captions.vtt"
 }

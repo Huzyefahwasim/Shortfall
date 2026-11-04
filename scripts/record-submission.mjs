@@ -325,6 +325,26 @@ try {
     channel: process.env.BROWSER_CHANNEL || 'msedge',
     headless: true,
   });
+  // Inspect the public documentation in a browser before starting the capture.
+  // Rapid HTML requests through the API client can trigger GitHub rate limits.
+  const preflight = await browser.newContext({ viewport });
+  try {
+    const checkPage = await preflight.newPage();
+    for (const url of [repository, evaluationURL, comparisonURL]) {
+      const response = await checkPage.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60_000,
+      });
+      assert.equal(
+        response?.status(),
+        200,
+        `Publish the repository and required document before recording: ${url}`,
+      );
+      await pause(4000);
+    }
+  } finally {
+    await preflight.close();
+  }
   context = await browser.newContext({
     baseURL,
     viewport,
@@ -332,15 +352,6 @@ try {
     acceptDownloads: true,
     recordVideo: { dir: outputDir, size: viewport },
   });
-  // Preflight documentation before creating a workspace or making any model request.
-  for (const url of [repository, evaluationURL, comparisonURL]) {
-    const response = await context.request.get(url, { timeout: 30_000 });
-    assert.equal(
-      response.status(),
-      200,
-      `Publish the repository and required document before recording: ${url}`,
-    );
-  }
   page = await context.newPage();
   videoEpoch = performance.now();
   videoEpochWallClock = new Date().toISOString();

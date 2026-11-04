@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Watch Shortfall resolve an invoice quantity exception with evidence, current approvals, and a durable workflow running on Vultr.">
+    <title>Shortfall — recorded demonstration</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f5f7fa; color: #142234; font: 16px/1.6 system-ui, sans-serif; }
+      header, main, footer { width: min(1120px, calc(100% - 40px)); margin: auto; }
+      header { padding: 28px 0; display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid #dce2ea; }
+      .brand { font-size: 23px; font-weight: 700; letter-spacing: -.6px; }
+      a { color: #244ed5; text-underline-offset: 4px; }
+      a:focus-visible { outline: 3px solid #244ed5; outline-offset: 5px; }
+      h1 { margin: 34px 0 8px; font-size: clamp(27px, 5vw, 38px); letter-spacing: -1px; line-height: 1.2; }
+      .intro { max-width: 770px; color: #526176; margin: 0 0 24px; }
+      video { width: 100%; aspect-ratio: 16 / 9; display: block; background: #101820; border: 1px solid #dce2ea; }
+      nav { display: flex; flex-wrap: wrap; gap: 14px 28px; margin: 22px 0; }
+      .scope { border-top: 1px solid #dce2ea; padding-top: 20px; color: #526176; font-size: 14px; }
+      footer { color: #526176; font-size: 13px; padding: 24px 0 38px; }
+      @media (max-width: 500px) { header { align-items: flex-start; flex-direction: column; gap: 8px; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="brand">Shortfall</span>
+      <a href="/">Open the live application →</a>
+    </header>
+    <main>
+      <h1>From a late receipt to an approved correction</h1>
+      <p class="intro">Watch the deployed workflow reject an obsolete $800 approval, apply a revised $400 hold, and reconcile a supplier credit while keeping the outstanding order open.</p>
+      <video controls playsinline preload="metadata" poster="cover.png" aria-label="Shortfall narrated demonstration">
+        <source src="demo.mp4" type="video/mp4">
+        <track src="captions.vtt" kind="captions" srclang="en" label="English">
+        <p>Your browser cannot play this video. <a href="demo.mp4">Download the MP4.</a></p>
+      </video>
+      <nav aria-label="Demonstration resources">
+        <a href="demo.mp4" download>Download MP4</a>
+        <a href="cover.png" download>Download cover</a>
+        <a href="https://github.com/Huzyefahwasim/vultr-hackathon">Source and setup</a>
+        <a href="https://github.com/Huzyefahwasim/vultr-hackathon/blob/main/docs/submission/judge-quickstart.md">Judge quickstart</a>
+      </nav>
+      <p class="scope">Synthetic business records · Synthesized narration · Real application actions and waiting states. This demonstration uses an internal ledger; it does not initiate payments, send supplier messages, or update an ERP.</p>
+    </main>
+    <footer>Huzyefah Wasim · Vultr Future of Work · <a href="https://github.com/Huzyefahwasim/vultr-hackathon/blob/main/docs/submission/media-notes.md">Media credits</a></footer>
+  </body>
+</html>

@@ -2,7 +2,7 @@
 
 Updated 4 November 2026. Times use Asia/Karachi (PKT, UTC+5).
 
-The application, custom PostgreSQL worker, and live Opus receipt/credit workflow are implemented. Public deployment, five API/browser checks, live inference, restart/persistence, and isolated restoration passed. Document evaluation is complete, with its baseline and later CSV checks reported separately. Narration is generated; final media publication and the event submission remain outstanding.
+The application, custom PostgreSQL worker, and live Opus receipt/credit workflow are implemented. Public deployment, five API/browser checks, live inference, restart/persistence, and isolated restoration passed. Document evaluation is complete, with its baseline and later CSV checks reported separately. The narrated MP4, cover, and captions are public; playback and readability review passed. Presentation PDF, enrollment/deadline confirmation, and the event form remain outstanding.
 
 ## Current position
 
@@ -13,17 +13,20 @@ The application, custom PostgreSQL worker, and live Opus receipt/credit workflow
 | Live Opus receipt/credit extraction | Successful local and public smoke runs |
 | Stale approval, $400 hold, approved credit/release, $4,400 reconciliation | Successful local and public smoke runs |
 | Deterministic and database tests | Regular suite: 50 passed, one DB test skipped without configuration; DB integration passed separately; typecheck and formatting passed |
-| Local and public API/browser workflow tests | Latest public run: three API and two browser tests passed in 18.3 seconds; fresh own-case entry, guide, persistence, isolation, and mobile behavior verified |
+| Hosted CI | eda293e passed all 51 tests including database integration, five API/browser workflows, formatting, typecheck, and production build |
+| Local and public API/browser workflow tests | Latest public suite: three API and two browser tests passed in 18.3 seconds |
+| Additional public usability checks | Fresh own-case entry, Guide, persistence, isolation, and desktop/mobile presentation verified separately |
 | Additional deployed CSV smoke | Live Opus extraction verified nine exact evidence spans and the expected $22.50 hold |
 | Database dump and isolated restore | Nine tables, 34 cases, seven budget reservations restored; application database untouched |
 | Public Vultr deployment | HTTPS, database/worker health, production build, and five API/browser checks passed |
 | Restart/container replacement | Queued $800 hold and session persisted; exactly one execution and task after replay |
 | Concurrent budget admission | One of two racing reservations accepted at each global/workspace boundary |
 | Document evaluation | 28 unique synthetic documents, 31 settled calls, $0.474656; three evaluation sets reported separately |
-| Video and narration | Real public UI captured; 501-word synthesized narration generated; final MP4 publication pending verification |
+| Video and narration | Published MP4: 252.24 seconds, 1600 × 900 at 25 fps, 15,884,185 bytes; browser playback, seek points, and caption readability verified |
 | Slide presentation | Slide content and speaker notes available; presentation PDF still to be exported and supplied |
-| Cover and final public asset links | Planned locations recorded in the media notes; not yet verified |
-| Repository visibility and event form | Final anonymous-access check and LabLab submission still required |
+| Cover and final public asset links | [Presentation page](https://shortfall.95.179.254.189.sslip.io/submission/), MP4, cover, and captions published; technical metadata verified |
+| Repository visibility | Public access verified; [hosted CI passed](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41770157593) |
+| Event form | Final fields, assets, and LabLab submission still required |
 
 Public demo: [shortfall.95.179.254.189.sslip.io](https://shortfall.95.179.254.189.sslip.io). Both manual-entry checks and live extraction passed on the deployed web/worker. [Workflow verification](evaluation.md) · [Document evaluation](evaluation-results.md)
 
@@ -35,7 +38,7 @@ Internal submission target: **7 November 2026, 18:00 PKT**, or an earlier offici
 
 | Date | Work | Exit condition |
 | --- | --- | --- |
-| 4 Nov | Finish media packaging | Verify narrated MP4 and cover; document evaluation already complete |
+| 4 Nov | Published media reviewed | Browser playback, readability, technical metadata, and delivery verified |
 | 5–6 Nov | Complete presentation and final checks | Export presentation PDF; verify fresh judge entry, independent case, and public assets against the frozen build |
 | By 7 Nov, 18:00 PKT | Submit | Complete event fields and confirm submission before the internal target or an earlier official cutoff |
 
@@ -58,7 +61,7 @@ The first release permits one invoice per supplier/PO within a workspace. Route 
 | Correctness | Stale approvals fail; retries cannot duplicate effects; credit release requires approval |
 | Recovery | A deployed worker restart and database restore preserve the expected records |
 | Model quality | Published baseline: 9/12 supported documents accepted exactly, three valid CSVs withheld, all 12 challenge expectations met; later checks kept separate |
-| Submission | Public links, video, PDF, license, and event form are complete |
+| Submission | App, repository, video, cover, captions, and license are available; presentation PDF, enrollment/deadline confirmation, and event form remain |
 
 Restart and restoration were exercised. The frozen baseline preceded a CSV validation correction; the three targeted reruns passed afterward. A fresh four-document CSV holdout then met its two acceptance and two review expectations. These project-authored synthetic records have no independent reviewer and do not establish customer-document accuracy. [Evaluation artifacts](evaluation-results.md)
 
@@ -106,7 +109,7 @@ Keep the demo available for the confirmed judging period. Export needed data bef
 
 ## Submission checklist
 
-The repository includes an MIT license. Verify public repository access before submission; a working local checkout does not establish public visibility. Preserve third-party license notices. [Participation terms](https://lablab.ai/terms-of-use)
+The [repository](https://github.com/Huzyefahwasim/vultr-hackathon) is public and includes an MIT license. Hosted CI verifies the build and configured test suite. Preserve third-party license notices. [Participation terms](https://lablab.ai/terms-of-use)
 
 - [ ] Confirm enrollment, official cutoff, timezone, and authorized submitter.
 - [x] Verify the deployed HTTPS URL and manual-entry flow in a fresh session.
@@ -115,12 +118,13 @@ The repository includes an MIT license. Verify public repository access before s
 - [x] Verify deployed restart and backup restoration.
 - [x] Record the actual public workflow with labeled synthetic data and captions.
 - [x] Generate narration with presentation context and measured evaluation wording.
-- [ ] Publish and verify the final MP4 and 16:9 cover without authentication.
+- [x] Publish the MP4, 16:9 cover, and captions; verify delivery and encoding metadata.
+- [x] Complete browser playback review of the published MP4.
 - [ ] Export the presentation as PDF from the [slide content and speaker notes](submission/slide-content.md) and attach it to the event form.
 - [ ] Enter title, summary, description, Challenge 02, technology tags, and participation mode.
 - [ ] Check the actual form's limits; standard guidance uses 5–50 title characters, 50–255 summary characters, and 600–2,000 description characters.
-- [ ] Keep the MP4/MOV video under 300 MB and approximately four minutes.
-- [ ] Verify public repository access, setup commands, MIT license, and README Vultr explanation.
+- [x] Keep the MP4 under 300 MB: published duration 4:12, size approximately 15.9 MB.
+- [x] Verify public repository access, setup commands, MIT license, and README Vultr explanation.
 - [x] State the input boundary, internal ledger scope, and measured evaluation limits.
 - [ ] Submit through LabLab and confirm the dashboard records the entry.
 - [ ] Preserve the submitted build and keep the demo available for judging.
