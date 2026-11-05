@@ -1,8 +1,8 @@
 # Delivery and submission plan
 
-Updated 4 November 2026. Times use Asia/Karachi (PKT, UTC+5).
+Updated 5 November 2026. Times use Asia/Karachi (PKT, UTC+5).
 
-The application, custom PostgreSQL worker, and live Opus receipt/credit workflow are implemented. Public deployment, five API/browser checks, live inference, restart/persistence, and isolated restoration passed. Document evaluation is complete, with its baseline and later CSV checks reported separately. The narrated MP4, cover, and captions are public; playback and readability review passed. Presentation PDF, enrollment/deadline confirmation, and the event form remain outstanding.
+Release b236569 is deployed with Home, browser history, End session, and bounded panel layouts. Hosted CI passed 53 tests and 11 API/browser workflows; four targeted public tests and four-viewport visual review passed. Earlier live inference, restart/persistence, and isolated restoration checks remain recorded. Document evaluation is complete, with its baseline and later CSV checks separate. The published MP4, cover, and captions passed playback/readability review. Presentation PDF, enrollment/deadline confirmation, and the event form remain outstanding.
 
 ## Current position
 
@@ -12,20 +12,20 @@ The application, custom PostgreSQL worker, and live Opus receipt/credit workflow
 | Custom durable jobs, execution receipts, extraction cache, budget reservations | Implemented |
 | Live Opus receipt/credit extraction | Successful local and public smoke runs |
 | Stale approval, $400 hold, approved credit/release, $4,400 reconciliation | Successful local and public smoke runs |
-| Deterministic and database tests | Regular suite: 50 passed, one DB test skipped without configuration; DB integration passed separately; typecheck and formatting passed |
-| Hosted CI | eda293e passed all 51 tests including database integration, five API/browser workflows, formatting, typecheck, and production build |
-| Local and public API/browser workflow tests | Latest public suite: three API and two browser tests passed in 18.3 seconds |
-| Additional public usability checks | Fresh own-case entry, Guide, persistence, isolation, and desktop/mobile presentation verified separately |
+| Deterministic and database tests | All 53 passed in configured CI; local run without DB configuration had 52 passes and one skip |
+| Hosted CI | b236569 passed 53 tests, 11 API/browser workflows, formatting, typecheck, and production build |
+| Targeted public release tests | Four passed in 55.7 seconds: two viewport/dialog matrices, navigation/session lifecycle, and complete receipt/credit resolution/export |
+| Additional public visual checks | Four viewports passed, including Home and all nine new-case fields fitting at 1280 × 560 |
 | Additional deployed CSV smoke | Live Opus extraction verified nine exact evidence spans and the expected $22.50 hold |
 | Database dump and isolated restore | Nine tables, 34 cases, seven budget reservations restored; application database untouched |
-| Public Vultr deployment | HTTPS, database/worker health, production build, and five API/browser checks passed |
+| Public Vultr deployment | b236569 deployed 5 November; HTTPS, health, build, and targeted public checks passed |
 | Restart/container replacement | Queued $800 hold and session persisted; exactly one execution and task after replay |
 | Concurrent budget admission | One of two racing reservations accepted at each global/workspace boundary |
 | Document evaluation | 28 unique synthetic documents, 31 settled calls, $0.474656; three evaluation sets reported separately |
-| Video and narration | Published MP4: 252.24 seconds, 1600 × 900 at 25 fps, 15,884,185 bytes; browser playback, seek points, and caption readability verified |
+| Video and narration | Published MP4: 265.88 seconds, 1600 × 900 at 25 fps, 16,202,676 bytes; updated UI, browser playback, seek points, and caption readability verified |
 | Slide presentation | Slide content and speaker notes available; presentation PDF still to be exported and supplied |
 | Cover and final public asset links | [Presentation page](https://shortfall.95.179.254.189.sslip.io/submission/), MP4, cover, and captions published; technical metadata verified |
-| Repository visibility | Public access verified; [hosted CI passed](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41770157593) |
+| Repository visibility | Public access verified; [b236569 hosted CI passed](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41974680837) |
 | Event form | Final fields, assets, and LabLab submission still required |
 
 Public demo: [shortfall.95.179.254.189.sslip.io](https://shortfall.95.179.254.189.sslip.io). Both manual-entry checks and live extraction passed on the deployed web/worker. [Workflow verification](evaluation.md) · [Document evaluation](evaluation-results.md)
@@ -123,7 +123,7 @@ The [repository](https://github.com/Huzyefahwasim/vultr-hackathon) is public and
 - [ ] Export the presentation as PDF from the [slide content and speaker notes](submission/slide-content.md) and attach it to the event form.
 - [ ] Enter title, summary, description, Challenge 02, technology tags, and participation mode.
 - [ ] Check the actual form's limits; standard guidance uses 5–50 title characters, 50–255 summary characters, and 600–2,000 description characters.
-- [x] Keep the MP4 under 300 MB: published duration 4:12, size approximately 15.9 MB.
+- [x] Keep the MP4 under 300 MB: published duration 4:26, size approximately 16.2 MB.
 - [x] Verify public repository access, setup commands, MIT license, and README Vultr explanation.
 - [x] State the input boundary, internal ledger scope, and measured evaluation limits.
 - [ ] Submit through LabLab and confirm the dashboard records the entry.

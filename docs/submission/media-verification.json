@@ -1,11 +1,11 @@
 {
-  "verifiedOn": "2026-11-04",
-  "applicationRevision": "eda293e563f5a2e76eca27bfd210de81c178a653",
+  "verifiedOn": "2026-11-05",
+  "applicationRevision": "b2365699532ac270aa40a8034d6bdffe18d42c90",
   "presentationUrl": "https://shortfall.95.179.254.189.sslip.io/submission/",
   "videoUrl": "https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4",
   "video": {
-    "durationSeconds": 252.24,
-    "bytes": 15884185,
+    "durationSeconds": 265.88,
+    "bytes": 16202676,
     "width": 1600,
     "height": 900,
     "framesPerSecond": 25,
@@ -13,7 +13,7 @@
     "audioCodec": "aac",
     "audioSampleRate": 48000,
     "audioChannels": 1,
-    "sha256": "ca83a61ffd42fea2681cdfa7fccead6353a198f1d7a0e9a410a79ba14f708e42"
+    "sha256": "acc8159f839e1bac91199ac69a4a84450f95ccf3f2a272f2ff364d05e8037958"
   },
   "recording": {
     "completedNarrationCues": 54,
@@ -30,8 +30,8 @@
     "finalOpenPurchaseOrderUnits": 10,
     "paymentExecuted": false,
     "actionPlaybackSpeed": 1,
-    "narrationOffsetFromVideoEpochSeconds": 0.047,
-    "idleCaptureCloseTailRemovedSeconds": 4.88
+    "narrationOffsetFromVideoEpochSeconds": 0.99,
+    "idleCaptureCloseTailRemovedSeconds": 4.72
   },
   "publicDelivery": {
     "playerHttpStatus": 200,
@@ -46,7 +46,7 @@
     "mediaErrors": 0,
     "javascriptErrors": 0,
     "captionCues": 54,
-    "seekSecondsVerified": [2.2, 65, 90, 133, 156, 191, 215, 248],
+    "seekSecondsVerified": [3.2, 81.8, 96, 110.5, 140.5, 166.5, 206.5, 264.2],
     "captionsAndAmountsVisuallyInspected": true,
     "syntheticRecordsAndNarrationDisclosureVisible": true
   },

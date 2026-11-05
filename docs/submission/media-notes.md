@@ -18,7 +18,7 @@ The narration does not imply customer endorsement or independent validation. Rev
 
 The video shows actual source uploads, quote inspection, a rejected obsolete approval, an approved internal hold, and approved supplier-credit reconciliation. The evaluation report distinguishes the frozen baseline from a targeted CSV regression and a fresh CSV holdout. The corpus and expected labels are project-authored; no customer corpus or independent reviewer was used. [Evaluation](../evaluation-results.md)
 
-The recorded workflow passed 54 cue checks, verified 15 exact live source quotes, and matched the expected reconciled ledger and export. Action footage retains its original speed. Narration was normalized separately; the only removed footage was 4.88 seconds of idle capture-close time. Presentation timing is not a latency benchmark.
+The recorded workflow passed 54 cue checks, verified 15 exact live source quotes, and matched the expected reconciled ledger and export. The recording shows the deployed Home, End session, and bounded-panel layout. Action footage retains its original speed. Narration was normalized separately; the only removed footage was 4.72 seconds of idle capture-close time. Presentation timing is not a latency benchmark.
 
 ## Asset status
 
@@ -33,17 +33,17 @@ The recorded workflow passed 54 cue checks, verified 15 exact live source quotes
 
 ## Published MP4 metadata
 
-Verified 4 November 2026:
+Verified 5 November 2026:
 
 | Property | Value |
 | --- | --- |
-| Duration | 252.24 seconds, approximately 4:12 |
+| Duration | 265.88 seconds, approximately 4:26 |
 | Dimensions and frame rate | 1600 × 900, 25 fps |
 | Video codec | H.264 |
 | Audio | AAC, 48 kHz, mono |
-| File size | 15,884,185 bytes, approximately 15.9 MB |
-| Audio level analysis | Mean −17.4 dB; maximum −1.2 dB |
-| SHA-256 | `ca83a61ffd42fea2681cdfa7fccead6353a198f1d7a0e9a410a79ba14f708e42` |
+| File size | 16,202,676 bytes, approximately 16.2 MB |
+| Audio level analysis | Mean −17.7 dBFS; maximum −1.3 dBFS; integrated −16.45 LUFS |
+| SHA-256 | `acc8159f839e1bac91199ac69a4a84450f95ccf3f2a272f2ff364d05e8037958` |
 
 The file is below the generic 300 MB submission limit and recommended five-minute duration. Browser review confirmed successful page/MP4/VTT delivery, advancing playback, all eight seek points, 54 caption cues, and no JavaScript or media errors. Inspected frames showed readable captions, the $800 obsolete and $400 current proposal amounts, $4,400 net invoice, ten open PO units, and the closing credit.
 

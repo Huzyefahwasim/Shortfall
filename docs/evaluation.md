@@ -1,18 +1,18 @@
 # Evaluation and release checks
 
-Results snapshot: 4 November 2026. These results cover local checks and the public Vultr deployment. The live model workflow passed both locally and through the deployed web/worker. Synthetic fixtures establish specific behavior; they do not establish customer value or general extraction accuracy.
+UI release snapshot: 5 November 2026, deployed revision b236569. These results cover local checks, hosted CI, and the public Vultr deployment. Earlier live extraction and frozen document-evaluation results retain their original scope. Synthetic fixtures establish specific behavior; they do not establish customer value or general extraction accuracy.
 
 ## Observed checks
 
 | Check | Observed result | Scope |
 | --- | --- | --- |
 | TypeScript and formatting | Passed | Whole repository typecheck and formatting check |
-| Hosted CI for eda293e | Passed | All 51 tests including database integration, five API/browser workflows, formatting, typechecking, and production build |
-| Regular test suite | 50 passed; one database test skipped without configuration | Domain, extraction, budget arithmetic, origin checks, PDF parsing, four PCM alignment tests, and related deterministic checks |
+| Hosted CI for b236569 | Passed | All 53 tests including configured database integration, 11 API/browser workflows, formatting, typechecking, and production build |
+| Regular test suite | 52 passed locally; one database test skipped without configuration; all 53 passed in configured CI | Domain, extraction, budget arithmetic, origin checks, PDF parsing, PCM alignment, session handling, and related deterministic checks |
 | Database integration | Passed separately | Ownership, competing approvals/execution, source serialization, reset accounting, retries, expiry/session limits, and concurrent global/workspace budget admission |
-| API workflow tests | Three passed locally and on the public deployment | Stale approval, credit reconciliation, duplicate execution, cross-session/origin checks, and a new independent case |
-| Browser tests | Two passed locally and on the public deployment | Manual receipt/credit flow, export, refresh persistence, and mobile viewport behavior |
-| Additional public usability checks | Passed separately from the five-test suite | Fresh own-case entry, Guide, persistence, visitor isolation, and desktop/mobile presentation |
+| API/browser suite | All 11 passed in hosted CI | Three API workflows, two original UI workflows, and six navigation/layout regressions |
+| Targeted public release tests | Four passed in 55.7 seconds | All views/dialogs at 1280 × 560 and 390 × 700; Home/history, skip link, cross-tab logout, old-token 401 and explicit re-entry; full UI receipt/credit resolution and export |
+| Additional public visual checks | Passed separately at four viewports | 1280 × 560, 1366 × 650, 1440 × 760, and 390 × 700; Home fits and all nine new-case fields fit without form scrolling at 1280 × 560 |
 | Live Opus workflow | Passed locally and on the public deployment | Sample receipt and credit uploads, validated evidence, stale approval rejection, worker execution, and final reconciliation |
 | Additional deployed CSV smoke | Passed | Live Opus upload, nine exact evidence spans, and expected 2,250-cent hold |
 | Production build and deployment | Passed | Linux production build, public HTTPS, fresh session, database health, and worker heartbeat |
@@ -20,9 +20,9 @@ Results snapshot: 4 November 2026. These results cover local checks and the publ
 | Restart/container replacement | Passed publicly | Queued hold and session persisted; replay produced one execution, one task, and 80,000 cents held |
 | Backup restoration | Passed in an isolated temporary database | Nine tables, 34 cases, and seven budget reservations restored; temporary database removed and application database unchanged |
 | Recorded public workflow | Passed | 54 recording cues, 15 exact live source quotes, and correct reconciled ledger/export |
-| Published presentation | Delivery, technical metadata, playback, seek points, and readability verified | MP4: 252.24 seconds, 1600 × 900, 25 fps, H.264/AAC, 15,884,185 bytes; public cover and 54 VTT cues; no JavaScript/media errors |
+| Published presentation | Delivery, technical metadata, playback, seek points, and readability verified | MP4: 265.88 seconds, 1600 × 900, 25 fps, H.264/AAC, 16,202,676 bytes; updated UI, public cover and 54 VTT cues; no JavaScript/media errors |
 
-The current local regular suite and separate database run together exercised 51 tests. The latest deployed API/browser run passed all five tests in 18.3 seconds. The [hosted CI run for eda293e](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41770157593) then passed all 51 tests, including the configured database integration test, followed by five API/browser workflows, formatting, typechecking, and a production build. Browser tests use manual entry and do not claim live inference coverage. The separate live smoke calls the provider.
+The [hosted CI run for b236569](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41974680837) passed all 53 tests, including configured database integration, and all 11 API/browser workflows. Four targeted tests were then run against the public release and passed in 55.7 seconds. The six navigation/layout regressions verify internal scrolling and reachable actions in bounded panels. Browser workflows use manual entry; separate live smoke runs call the provider.
 
 ## Live extraction snapshot
 

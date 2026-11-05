@@ -2,7 +2,7 @@
 
 Open [Shortfall](https://shortfall.95.179.254.189.sslip.io) in a fresh private/incognito window. You do not need an account, API key, environment file, or local installation. Choose **Explore a sample case** or **Create your own case** to start a private anonymous workspace with a seven-day session. Opening the entry page alone does not create a session. Keeping the same browser session preserves access; a separate private session can start a separate workspace.
 
-The Home/End session behavior below passed local verification on 5 November. Its public deployment is pending.
+The Home/End session and bounded-layout update was deployed as b236569 on 5 November 2026 and passed public verification.
 
 Use synthetic records. The application records real changes in its internal demonstration ledger; it does not send payments or update an ERP.
 
@@ -59,7 +59,7 @@ To leave the anonymous workspace, choose **End session** and confirm **End sessi
 - Supply conflicting identifiers or an unsupported source. The case stays in review.
 - Reset affects the current workspace's cases; it does not reset model-spend accounting.
 
-The navigation/layout regression checks passed locally at 1280 × 560, 1366 × 650, 1440 × 760, and 390 × 700. They verify bounded page layout, internal scrolling, reachable dialog actions, keyboard access, history, and session ending. These new regression checks are separate from the earlier public workflow tests.
+The navigation/layout regressions passed in CI across 1280 × 560, 1366 × 650, 1440 × 760, and 390 × 700. Targeted public tests covered all views/dialogs at 1280 × 560 and 390 × 700, Home/history, the skip link, cross-tab logout, rejection of the old token, explicit re-entry, and the complete receipt/credit workflow. Separate public visual checks passed at all four sizes; Home and all nine new-case fields fit at 1280 × 560. Long records scroll within bounded panels.
 
 If the file itself needs correction, upload a corrected file using the same document type and reference. This supersedes the current source while preserving its history. **Retry extraction** processes the same source again; it does not repair missing fields. A pending or unverified current document blocks a new proposal.
 
