@@ -26,12 +26,14 @@ The 6 November recording passed 54 cue checks, verified 15 exact live source quo
 | --- | --- | --- |
 | Presentation page | [Watch the demonstration](https://shortfall.95.179.254.189.sslip.io/submission/) | Public; browser playback and caption/readability review passed |
 | Narrated MP4 | [demo.mp4](https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4) | Published; delivery, technical metadata, playback, and nine seek points verified |
-| 16:9 cover | [cover.png](https://shortfall.95.179.254.189.sslip.io/submission/cover.png) | Published |
+| Landscape cover | [cover.png](https://shortfall.95.179.254.189.sslip.io/submission/cover.png) | 1672 × 941 PNG; illustrated case, suitable for the submission and a LinkedIn post |
 | Captions | [captions.vtt](https://shortfall.95.179.254.189.sslip.io/submission/captions.vtt) | Published |
 | Slide PDF | [shortfall-pitch.pdf](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pdf) | Eight pages; published, visually reviewed, and public download verified |
 | Editable PowerPoint | [shortfall-pitch.pptx](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pptx) | Eight editable slides with native comparison table, diagrams, and notes; published and verified |
 | Slide content and speaker notes | [slide-content.md](slide-content.md) | Text reference for the separate deck |
 | Submission text | [entry.json](entry.json) | Verified public video, cover, PDF, and PPTX URLs included |
+
+The [cover illustration](../assets/shortfall-cover.png) shows the synthetic Northstar case: a late receipt adds ten units, changing the proposed hold from $800 to $400. It illustrates a proposed ledger correction, not measured savings or recovered cash. Product screenshots and recorded application actions are separate assets.
 
 The deck is separate from the narrated demonstration. Upload its PDF as the slide presentation; keep the PPTX for editing. Repository copies: [PDF](deck/shortfall-pitch.pdf) and [PPTX](deck/shortfall-pitch.pptx). All eight reimported PPTX slides and all eight PDF pages passed visual review without overlap or clipping. The PDF preserves selectable text, embeds Segoe UI regular and bold, and contains two working links. Public PDF, PPTX, and player requests returned HTTP 200; content types and file hashes matched the verified copies.
 
