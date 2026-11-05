@@ -1,7 +1,7 @@
 'use client';
-
-import { ArrowRight, Check, FileText, LockKeyhole, LogOut, Plus, ShieldCheck } from 'lucide-react';
-
+import { useState } from 'react';
+import { ArrowRight, FileText, HelpCircle, LockKeyhole, LogOut, Plus } from 'lucide-react';
+import { HelpDialog } from './operations-console';
 interface EntryProps {
   canContinue: boolean;
   onExplore: () => void;
@@ -9,7 +9,6 @@ interface EntryProps {
   onContinue: () => void;
   onEndSession?: () => void;
 }
-
 export function WorkspaceEntry({
   canContinue,
   onExplore,
@@ -17,6 +16,7 @@ export function WorkspaceEntry({
   onContinue,
   onEndSession,
 }: EntryProps) {
+  const [help, setHelp] = useState(false);
   return (
     <div className="entry-screen">
       <header className="appbar entry-appbar">
@@ -28,13 +28,13 @@ export function WorkspaceEntry({
           Shortfall<span className="product-area">Payables</span>
         </div>
         <span className="entry-session">
-          <LockKeyhole size={14} />
+          <LockKeyhole size={13} />
           Private workspace
         </span>
         {canContinue && (
           <button className="button secondary" onClick={onContinue}>
             Return to workspace
-            <ArrowRight size={15} />
+            <ArrowRight size={14} />
           </button>
         )}
         {canContinue && onEndSession && (
@@ -46,105 +46,80 @@ export function WorkspaceEntry({
       </header>
       <main className="entry-main">
         <div className="entry-introduction">
-          <div className="eyebrow">INVOICE EXCEPTION WORKFLOW</div>
+          <span className="eyebrow">INVOICE OPERATIONS</span>
           <h1>Resolve an invoice exception</h1>
           <p>
-            Compare what was billed with what was received. Inspect the source evidence, then
-            approve the exact change to your ledger.
+            Compare the invoice with accepted goods. Review the evidence, then approve the
+            correction.
           </p>
         </div>
-        <div className="entry-layout">
-          <section className="entry-start" aria-label="Choose how to start">
-            <h2>Choose a starting point</h2>
-            <button className="entry-choice sample-choice" onClick={onExplore}>
-              <span className="entry-choice-icon">
-                <FileText size={22} />
-              </span>
+        <div className="entry-choices">
+          <button className="entry-choice sample-choice" onClick={onExplore}>
+            <FileText size={24} />
+            <div>
+              <strong>Explore a sample case</strong>
+              <p>Resolve Northstar’s $800 discrepancy as a late receipt changes the amount.</p>
               <span>
-                <strong>Explore a sample case</strong>
-                <small>
-                  Follow Northstar’s invoice from an $800 discrepancy to a verified resolution.
-                </small>
+                Open guided example
+                <ArrowRight size={15} />
               </span>
-              <ArrowRight size={20} />
-            </button>
-            <button className="entry-choice" onClick={onCreate}>
-              <span className="entry-choice-icon">
-                <Plus size={23} />
-              </span>
-              <span>
-                <strong>Create your own case</strong>
-                <small>
-                  Enter supplier, order, invoice, item, and quantities. Add supporting documents
-                  after setup.
-                </small>
-              </span>
-              <ArrowRight size={20} />
-            </button>
-            <div className="entry-scope">
-              <ShieldCheck size={18} />
-              <div>
-                <strong>What this workspace supports</strong>
-                <p>
-                  One invoice per purchase order. Exact item identifiers, whole units, USD, and no
-                  tax or foreign exchange.
-                </p>
-              </div>
             </div>
-            <p className="entry-boundary">
-              <Check size={14} />
-              No account or API key required. Your changes persist when you refresh.
-            </p>
-          </section>
-          <aside className="entry-workflow" aria-label="Workflow guide">
-            <h2>Review workflow</h2>
-            <ol>
-              <li>
-                <span>01</span>
-                <div>
-                  <strong>Set up the case</strong>
-                  <p>Start with a sample or enter the invoice and purchase-order details.</p>
-                </div>
-              </li>
-              <li>
-                <span>02</span>
-                <div>
-                  <strong>Inspect the evidence</strong>
-                  <p>
-                    Upload supporting records. Click extracted fields to check their source text.
-                  </p>
-                </div>
-              </li>
-              <li>
-                <span>03</span>
-                <div>
-                  <strong>Review the change</strong>
-                  <p>
-                    Approve a hold or credit against the current evidence. Changed sources
-                    invalidate earlier proposals.
-                  </p>
-                </div>
-              </li>
-              <li>
-                <span>04</span>
-                <div>
-                  <strong>Verify and export</strong>
-                  <p>
-                    Check the recorded changes and download the reconciliation with its history.
-                  </p>
-                </div>
-              </li>
-            </ol>
-            <div className="entry-data-note">
-              <span>SYNTHETIC BUSINESS RECORDS</span>
+          </button>
+          <button className="entry-choice" onClick={onCreate}>
+            <Plus size={24} />
+            <div>
+              <strong>Create your own case</strong>
               <p>
-                This workspace uses an internal ledger. It does not issue payments or send supplier
-                messages.
+                Enter a supplier, invoice, order and quantities. Add supporting records when ready.
               </p>
+              <span>
+                Start a case
+                <ArrowRight size={15} />
+              </span>
             </div>
-          </aside>
+          </button>
         </div>
+        <div className="entry-footer">
+          <p>USD · Whole units · One invoice per order</p>
+          <button className="text-button" onClick={() => setHelp(true)}>
+            <HelpCircle size={15} />
+            How it works & workspace limits
+          </button>
+        </div>
+        <p className="entry-boundary">
+          Synthetic records. Internal ledger. No account or API key required.
+        </p>
       </main>
+      {help && (
+        <HelpDialog title="How Shortfall works" onClose={() => setHelp(false)}>
+          <ol className="help-steps">
+            <li>
+              <strong>Start a case.</strong> Use the sample or manually enter invoice and
+              purchase-order details.
+            </li>
+            <li>
+              <strong>Inspect Documents.</strong> Upload a text PDF, TXT, CSV or JSON, then select a
+              field to read its supporting quote.
+            </li>
+            <li>
+              <strong>Review the change.</strong> Approve against the current evidence. New evidence
+              invalidates older proposals.
+            </li>
+            <li>
+              <strong>Verify and export.</strong> Inspect execution receipts and case history in
+              Activity.
+            </li>
+          </ol>
+          <p className="form-note">
+            The workspace supports exact item identifiers, whole quantities and USD. Split
+            invoicing, tax and foreign exchange are outside its policy.
+          </p>
+          <p className="form-note">
+            Records are synthetic and isolated from other visitors. The internal ledger does not
+            issue payments, send supplier messages or update an ERP.
+          </p>
+        </HelpDialog>
+      )}
     </div>
   );
 }

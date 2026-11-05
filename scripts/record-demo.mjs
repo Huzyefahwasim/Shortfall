@@ -83,10 +83,47 @@ async function pause(milliseconds = 3000) {
 }
 
 async function frame(locator) {
-  await locator.evaluate((element) =>
-    element.scrollIntoView({ block: 'center', behavior: 'smooth' }),
-  );
+  await expect(locator).toBeVisible();
+  await expect(locator).toBeInViewport({ ratio: 0.95 });
   await pause(650);
+}
+
+async function caseTab(name) {
+  await page.getByRole('tab', { name: new RegExp(`^${name}`) }).click();
+  if (name === 'Overview') {
+    const back = page.getByRole('button', { name: 'Back to current action', exact: true });
+    if (await back.isVisible()) await back.click();
+  }
+}
+
+async function openSource(document) {
+  await caseTab('Documents');
+  const pagination = page.getByRole('navigation', { name: 'Documents pagination', exact: true });
+  const previous = pagination.getByRole('button', { name: 'Previous page', exact: true });
+  for (let count = 0; (await previous.count()) && (await previous.isEnabled()); count++) {
+    assert(count < 10, 'Document pagination did not return to the first page.');
+    await previous.click();
+  }
+  const row = page.locator(`[data-document-id="${document.id}"]`);
+  for (let count = 0; !(await row.count()); count++) {
+    assert(count < 10, 'Uploaded document is missing from every page.');
+    const next = pagination.getByRole('button', { name: 'Next page', exact: true });
+    await expect(next).toBeEnabled();
+    await next.click();
+  }
+  await row.click();
+}
+
+async function evidenceField(label) {
+  const field = page.getByRole('combobox', { name: 'Inspect source field', exact: true });
+  const option = field
+    .locator('option')
+    .filter({ hasText: new RegExp(label, 'i') })
+    .first();
+  const value = await option.getAttribute('value');
+  assert(value !== null, `No extracted ${label} field is available.`);
+  await field.selectOption(value);
+  await expect(page.locator('.document-paper pre mark')).toBeInViewport();
 }
 
 async function readCase() {
@@ -134,6 +171,7 @@ async function clickAction(action, locator, expectedStatus = 200) {
 }
 
 async function uploadDocument(kind, reference, file, explanation) {
+  await caseTab('Documents');
   await frame(page.locator('.evidence-panel'));
   await page.getByRole('button', { name: 'Upload supporting document', exact: true }).click();
   const uploadDialog = page.locator('dialog[open]');
@@ -169,6 +207,7 @@ async function uploadDocument(kind, reference, file, explanation) {
   );
   assert(document, 'The uploaded document is missing from the persisted case.');
   await expect(page.getByRole('dialog')).not.toBeVisible();
+  await openSource(document);
   await frame(page.locator('.evidence-panel'));
   await caption(
     'The uploaded document is being checked. This recording keeps the actual processing time.',
@@ -234,6 +273,7 @@ try {
 
   await stage('Open the real sample workspace', async () => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await page.getByRole('button', { name: /^Explore a sample case/ }).click();
     await expect(
       page.getByRole('heading', { name: 'The exception desk', exact: true }),
     ).toBeVisible({ timeout: 60_000 });
@@ -288,13 +328,7 @@ try {
       110,
     );
     assert.equal(record.heldCents, 0);
-    const quantity = page
-      .locator('.evidence-fields button')
-      .filter({ hasText: 'Quantity' })
-      .first();
-    await expect(quantity).toBeVisible();
-    await quantity.click();
-    await expect(page.locator('.document-paper mark')).toBeVisible();
+    await evidenceField('Quantity');
     await frame(page.locator('.evidence-panel'));
     await caption(
       'Ten more units are accepted. The extracted quantity links to its source quote. The discrepancy is now $400.',
@@ -303,7 +337,8 @@ try {
   });
 
   await stage('Reject the outdated approval without a ledger write', async () => {
-    await page.getByRole('button', { name: 'Previous proposals', exact: true }).click();
+    await caseTab('Overview');
+    await page.getByRole('button', { name: /^Previous proposals/ }).click();
     await page
       .locator('.old-proposal')
       .filter({ hasText: `Revision ${originalProposal.sourceRevision}` })
@@ -329,10 +364,17 @@ try {
   });
 
   await stage('Approve and verify the revised $400 hold', async () => {
-    const planned = await clickAction(
-      'propose',
-      page.getByRole('button', { name: 'Prepare updated plan', exact: true }),
-    );
+    const updated = page.getByRole('button', { name: 'Prepare updated plan', exact: true });
+    let planned;
+    if (await updated.isVisible()) planned = await clickAction('propose', updated);
+    else {
+      await page.getByRole('button', { name: 'Close review', exact: true }).click();
+      await caseTab('Overview');
+      planned = await clickAction(
+        'propose',
+        page.getByRole('button', { name: 'Prepare resolution', exact: true }),
+      );
+    }
     assert.equal(planned.proposals.at(-1).amountCents, 40_000);
     await expect(page.locator('.proposal-amount strong')).toHaveText('$400');
     await caption(
@@ -357,6 +399,7 @@ try {
       timeout: 15_000,
     });
     await page.getByRole('tab', { name: /^Activity/ }).click();
+    await page.getByRole('button', { name: 'Execution receipts', exact: true }).click();
     await frame(page.locator('.execution-panel'));
     await caption(
       'The worker applied and verified the $400 hold. The supplier follow-up task is recorded.',
@@ -373,7 +416,7 @@ try {
       'Checking the completed command again creates no duplicate hold or follow-up task.',
     );
     await pause(3500);
-    await page.getByRole('tab', { name: 'Evidence & resolution', exact: true }).click();
+    await caseTab('Overview');
   });
 
   await stage('Upload and verify the supplier credit', async () => {
@@ -387,11 +430,7 @@ try {
     assert.equal(credit?.amountCents, 40_000);
     assert.equal(credit?.applied, false);
     assert.equal(record.heldCents, 40_000);
-    const total = page.locator('.evidence-fields button').filter({ hasText: 'Total' }).first();
-    if (await total.count()) {
-      await total.click();
-      await expect(page.locator('.document-paper mark')).toBeVisible();
-    }
+    await evidenceField('Total');
     await caption(
       'The $400 credit is verified against the document. It still needs approval before the ledger changes.',
     );
@@ -399,6 +438,7 @@ try {
   });
 
   await stage('Reconcile to $4,400 while keeping 10 PO units open', async () => {
+    await caseTab('Overview');
     const planned = await clickAction(
       'propose',
       page.getByRole('button', { name: 'Prepare resolution', exact: true }),
@@ -461,15 +501,16 @@ try {
       `EXPORT ${download.suggestedFilename()}: verified net=440000 cents, open_po_units=10, payment_executed=false`,
     );
     await page.getByRole('tab', { name: /^Activity/ }).click();
+    await page.getByRole('button', { name: 'Execution receipts', exact: true }).click();
     await frame(page.locator('.execution-panel'));
     await caption(
       'The real export contains source evidence, approvals, execution records, and the complete case history.',
     );
     await pause(5000);
+    await page.getByRole('button', { name: 'History', exact: true }).click();
     await frame(page.locator('.timeline-panel'));
     await pause(3500);
-    await page.getByRole('tab', { name: 'Evidence & resolution', exact: true }).click();
-    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    await caseTab('Overview');
     await pause(1000);
     await caption(
       'Synthetic business records. Real extraction, approvals, and persisted changes. No payment was made.',

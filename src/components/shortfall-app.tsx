@@ -1,6 +1,6 @@
 'use client';
 
-import { OperationsConsole } from './operations-console';
+import { OperationsConsole, Pagination, type CaseTab } from './operations-console';
 import { WorkspaceEntry } from './workspace-entry';
 
 import {
@@ -250,7 +250,7 @@ export function ShortfallApp() {
   const [notice, setNotice] = useState<Notice>(null);
   const [review, setReview] = useState<Proposal | null>(null);
   const [reviewError, setReviewError] = useState('');
-  const [tab, setTab] = useState<'evidence' | 'activity'>('evidence');
+  const [tab, setTab] = useState<CaseTab>('overview');
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [evidenceIndex, setEvidenceIndex] = useState<number | null>(null);
   const [showOldProposals, setShowOldProposals] = useState(false);
@@ -470,7 +470,7 @@ export function ShortfallApp() {
     setEvidenceIndex(null);
     setShowOldProposals(false);
     setReview(null);
-    setTab('evidence');
+    setTab('overview');
     setMobileCase(true);
     try {
       const updated = await api<CaseRecord>(`/api/cases/${record.id}`);
@@ -577,7 +577,7 @@ export function ShortfallApp() {
         replaceCase(created);
         setModal(null);
         setDocumentId(null);
-        setTab('evidence');
+        setTab('overview');
         setMobileCase(true);
         setNotice({
           kind: 'success',
@@ -605,6 +605,7 @@ export function ShortfallApp() {
         replaceCase(updated);
         const uploaded = updated.documents.at(-1);
         if (uploaded) setDocumentId(uploaded.id);
+        setTab('documents');
         setEvidenceIndex(null);
         setModal(null);
         setNotice({
@@ -643,10 +644,7 @@ export function ShortfallApp() {
   const awaitingCount = cases.filter((c) => c.status === 'awaiting_approval').length;
   const resolvedCount = cases.filter((c) => c.status === 'resolved').length;
   const selectedTotals = selected ? totals(selected) : null;
-  const currentDocument =
-    selected?.documents.find((d) => d.id === documentId) ||
-    selected?.documents.find((d) => d.kind === 'invoice') ||
-    selected?.documents[0];
+  const currentDocument = selected?.documents.find((d) => d.id === documentId);
   const latestProposal = selected?.proposals.at(-1);
   const activeProposal =
     latestProposal &&
@@ -737,6 +735,7 @@ export function ShortfallApp() {
           onDocument={(id) => {
             setDocumentId(id);
             setEvidenceIndex(null);
+            setTab('documents');
           }}
           renderEvidence={(document) => (
             <EvidenceDocument
@@ -744,6 +743,7 @@ export function ShortfallApp() {
               evidenceIndex={evidenceIndex}
               onEvidence={setEvidenceIndex}
               busy={!!busy}
+              workerOnline={workspace?.service.workerOnline ?? false}
               onRetry={() =>
                 void action(
                   { action: 'retry_document', documentId: document.id },
@@ -1454,12 +1454,14 @@ function EvidenceDocument({
   evidenceIndex,
   onEvidence,
   busy,
+  workerOnline,
   onRetry,
 }: {
   document: CaseDocument;
   evidenceIndex: number | null;
   onEvidence: (index: number | null) => void;
   busy: boolean;
+  workerOnline: boolean;
   onRetry: () => void;
 }) {
   const evidence = evidenceIndex === null ? null : document.evidence[evidenceIndex];
@@ -1500,13 +1502,36 @@ function EvidenceDocument({
               ? 'Extraction verified'
               : 'Recorded sample'
             : document.status === 'pending'
-              ? 'Extracting'
+              ? workerOnline
+                ? 'Extracting'
+                : 'Waiting for worker'
               : 'Needs review'}
         </span>
       </div>
+      {document.evidence.length > 0 && (
+        <div className="evidence-fields">
+          <label htmlFor="source-field">Inspect source field</label>
+          <select
+            id="source-field"
+            value={evidenceIndex === null ? '' : String(evidenceIndex)}
+            onChange={(event) =>
+              onEvidence(event.target.value === '' ? null : Number(event.target.value))
+            }
+          >
+            <option value="">Choose a field to highlight its quote</option>
+            {document.evidence.map((field, index) => (
+              <option key={`${field.field}-${index}`} value={index}>
+                {fieldLabel(field.field)}:{' '}
+                {/Cents$/.test(field.field) && Number.isFinite(Number(field.value))
+                  ? money(Number(field.value))
+                  : field.value}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="document-paper">
-        <div className="paper-brand">{documentLabels[document.kind].toUpperCase()}</div>
-        <pre>
+        <pre tabIndex={0} role="region" aria-label="Source text">
           {evidence && start >= 0 ? (
             <>
               {document.text.slice(0, start)}
@@ -1517,53 +1542,24 @@ function EvidenceDocument({
             document.text || 'Source text will appear after extraction.'
           )}
         </pre>
-        <span className="paper-corner" />
       </div>
-      {document.extractionError && (
-        <div className="document-error">
-          <CircleAlert size={16} />
-          {document.extractionError}
-        </div>
-      )}
       {document.status === 'needs_review' && (
-        <p className="document-recovery">
-          Replace with a corrected document using the same type and reference. Retry extraction is
-          for a temporary extraction failure.
-        </p>
-      )}
-      {document.status === 'needs_review' && (
-        <button
-          className="button secondary full retry-extraction"
-          disabled={busy}
-          onClick={onRetry}
-        >
-          <RefreshCw size={15} />
-          Retry extraction
-        </button>
-      )}
-      {document.evidence.length > 0 && (
-        <div className="evidence-fields">
-          <span className="eyebrow">
-            {document.model ? 'INSPECT EXTRACTED FIELDS' : 'INSPECT RECORDED FIELDS'}
-          </span>
-          <div>
-            {document.evidence.map((field, index) => (
-              <button
-                key={`${field.field}-${index}`}
-                className={evidenceIndex === index ? 'active' : ''}
-                onClick={() => onEvidence(evidenceIndex === index ? null : index)}
-              >
-                <span>{fieldLabel(field.field)}</span>
-                <strong>
-                  {/Cents$/.test(field.field) && Number.isFinite(Number(field.value))
-                    ? money(Number(field.value))
-                    : field.value}
-                </strong>
-                <ArrowUpRight size={11} />
-              </button>
-            ))}
-          </div>
-        </div>
+        <details className="document-issue">
+          <summary>Needs review — correction and retry options</summary>
+          {document.extractionError && <p className="document-error">{document.extractionError}</p>}
+          <p className="document-recovery">
+            Replace with a corrected document using the same type and reference. Retry extraction is
+            for a temporary extraction failure.
+          </p>
+          <button
+            className="button secondary full retry-extraction"
+            disabled={busy}
+            onClick={onRetry}
+          >
+            <RefreshCw size={15} />
+            Retry extraction
+          </button>
+        </details>
       )}
     </div>
   );
@@ -1578,17 +1574,74 @@ function CaseActivity({
   busy: boolean;
   onRetry: (commandId: string) => void;
 }) {
+  const [view, setView] = useState<'history' | 'executions'>('history');
+  const [historyPage, setHistoryPage] = useState(0);
+  const [executionPage, setExecutionPage] = useState(0);
+  useEffect(() => {
+    setView('history');
+    setHistoryPage(0);
+    setExecutionPage(0);
+  }, [record.id]);
+  const history = [...record.history].reverse();
+  const executions = [...record.executions].reverse();
+  const page = Math.min(historyPage, Math.max(0, Math.ceil(history.length / 3) - 1));
+  const runPage = Math.min(executionPage, Math.max(0, Math.ceil(executions.length / 3) - 1));
   return (
     <div className="activity-content">
-      {record.executions.length > 0 && (
-        <section className="execution-panel panel">
-          <div className="section-title compact">
-            <h3>Execution records</h3>
-            <span className="subtle-label">READ-BACK VERIFICATION</span>
+      <div className="activity-switch" aria-label="Activity view">
+        <button
+          className={view === 'history' ? 'active' : ''}
+          aria-pressed={view === 'history'}
+          onClick={() => setView('history')}
+        >
+          History
+        </button>
+        <button
+          className={view === 'executions' ? 'active' : ''}
+          aria-pressed={view === 'executions'}
+          onClick={() => setView('executions')}
+        >
+          Execution receipts
+        </button>
+      </div>
+      {view === 'history' ? (
+        <section className="timeline-panel">
+          <div className="section-title">
+            <h3>Case history</h3>
+            <span>{history.length} events</span>
           </div>
-          {[...record.executions].reverse().map((execution) => (
+          {history.slice(page * 3, page * 3 + 3).map((event) => (
+            <details className="timeline-event" data-event-id={event.id} key={event.id}>
+              <summary>
+                <strong>{event.title}</strong>
+                <time>{time(event.at)}</time>
+              </summary>
+              <p>{event.detail}</p>
+              <span>
+                {event.actor} · {date(event.at)} · Revision {event.revision}
+              </span>
+            </details>
+          ))}
+          {history.length === 0 && (
+            <Empty title="No case activity yet" text="Recorded actions will appear here." />
+          )}
+          <Pagination
+            label="Case history pagination"
+            page={page}
+            count={history.length}
+            size={3}
+            onPage={setHistoryPage}
+          />
+        </section>
+      ) : (
+        <section className="execution-panel">
+          <div className="section-title">
+            <h3>Execution records</h3>
+            <span>Read-back verification</span>
+          </div>
+          {executions.slice(runPage * 3, runPage * 3 + 3).map((execution) => (
             <div className="execution-row" key={execution.id}>
-              <span className={`execution-symbol ${execution.status}`}>
+              <span className={'execution-symbol ' + execution.status}>
                 {execution.status === 'applied' ? (
                   <CheckCheck size={18} />
                 ) : execution.status === 'queued' ? (
@@ -1603,7 +1656,10 @@ function CaseActivity({
                 </strong>
                 <span>
                   {execution.status === 'applied'
-                    ? `${money(execution.beforeHeldCents || 0)} → ${money(execution.afterHeldCents || 0)} held · Verified`
+                    ? money(execution.beforeHeldCents || 0) +
+                      ' → ' +
+                      money(execution.afterHeldCents || 0) +
+                      ' held · Verified'
                     : execution.error || execution.status}
                 </span>
               </div>
@@ -1617,34 +1673,21 @@ function CaseActivity({
               </button>
             </div>
           ))}
+          {executions.length === 0 && (
+            <Empty
+              title="No execution records yet"
+              text="Approved changes appear here after the worker verifies them."
+            />
+          )}
+          <Pagination
+            label="Execution receipts pagination"
+            page={runPage}
+            count={executions.length}
+            size={3}
+            onPage={setExecutionPage}
+          />
         </section>
       )}
-      <section className="timeline-panel panel">
-        <div className="section-title compact">
-          <h3>Case history</h3>
-          <span className="subtle-label">{record.history.length} EVENTS</span>
-        </div>
-        <div className="timeline">
-          {[...record.history].reverse().map((event, index) => (
-            <div className={`timeline-event ${index === 0 ? 'latest' : ''}`} key={event.id}>
-              <span className="timeline-point">{index === 0 ? <Check size={10} /> : null}</span>
-              <div>
-                <div className="timeline-title">
-                  <strong>{event.title}</strong>
-                  <time>{time(event.at)}</time>
-                </div>
-                <p>{event.detail}</p>
-                <span>
-                  {event.actor} · {date(event.at)} · Revision {event.revision}
-                </span>
-              </div>
-            </div>
-          ))}
-          {record.history.length === 0 && (
-            <Empty title="No case activity yet" text="Recorded actions will appear here." />
-          )}
-        </div>
-      </section>
     </div>
   );
 }

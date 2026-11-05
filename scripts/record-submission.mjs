@@ -35,7 +35,9 @@ const receiptFile = path.join(root, 'public', 'samples', 'receipt-late.txt');
 const creditFile = path.join(root, 'public', 'samples', 'credit-note.txt');
 const architectureURL = `${repository}#how-vultr-powers-the-application`;
 const evaluationURL = `${repository}/blob/main/docs/evaluation-results.md`;
-const comparisonURL = `${repository}/blob/main/docs/pitch.md#7`;
+const comparisonURL = `${repository}/blob/main/docs/submission/slide-content.md#7-start-with-a-distributors-finance-team`;
+const comparisonHeading = "7. Start with a distributor's finance team";
+const comparisonBuyer = /Proposed buyer: finance manager at a small distributor/;
 const viewport = { width: 1600, height: 900 };
 const expectedCueCounts = [5, 5, 14, 12, 5, 5, 5, 3];
 const showCaptions = process.env.RECORDING_CAPTIONS !== 'false';
@@ -175,23 +177,40 @@ async function narrate(segmentNumber, cueIndex, action = async () => {}) {
 }
 async function frame(locator) {
   await expect(locator).toBeVisible();
-  await locator.evaluate((element) => {
-    const scroll = element.closest('.case-scroll');
-    if (scroll && scroll !== element) {
-      const bounds = element.getBoundingClientRect();
-      const container = scroll.getBoundingClientRect();
-      const padding = Math.max(
-        0,
-        (scroll.clientHeight - Math.min(bounds.height, scroll.clientHeight)) / 2,
-      );
-      scroll.scrollTo({
-        top: Math.max(0, scroll.scrollTop + bounds.top - container.top - padding),
-        behavior: 'smooth',
-      });
-    } else element.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  });
+  if (new URL(page.url()).origin === new URL(baseURL).origin) {
+    await expect(locator).toBeInViewport({ ratio: 0.95 });
+    return;
+  }
+  await locator.evaluate((element) =>
+    element.scrollIntoView({ block: 'center', behavior: 'smooth' }),
+  );
   await pause(350);
   await expect(locator).toBeInViewport();
+}
+async function caseTab(name) {
+  await page.getByRole('tab', { name: new RegExp(`^${name}`) }).click();
+  if (name === 'Overview') {
+    const back = page.getByRole('button', { name: 'Back to current action', exact: true });
+    if (await back.isVisible()) await back.click();
+  }
+}
+async function openSource(document) {
+  await caseTab('Documents');
+  const pagination = page.getByRole('navigation', { name: 'Documents pagination', exact: true });
+  const previous = pagination.getByRole('button', { name: 'Previous page', exact: true });
+  for (let count = 0; (await previous.count()) && (await previous.isEnabled()); count++) {
+    assert(count < 10, 'Document pagination did not return to the first page.');
+    await previous.click();
+  }
+  const row = page.locator(`[data-document-id="${document.id}"]`);
+  for (let count = 0; !(await row.count()); count++) {
+    assert(count < 10, 'Uploaded document is missing from every page.');
+    const next = pagination.getByRole('button', { name: 'Next page', exact: true });
+    await expect(next).toBeEnabled();
+    await next.click();
+  }
+  await row.click();
+  await expect(page.getByRole('button', { name: 'Close source', exact: true })).toBeVisible();
 }
 async function inspectStartedWorkspace() {
   const response = await context.request.get('/api/workspace');
@@ -255,7 +274,7 @@ async function clickAction(action, locator, status = 200) {
   return result;
 }
 async function upload(kind, reference, file) {
-  await page.getByRole('tab', { name: 'Evidence & resolution', exact: true }).click();
+  await caseTab('Documents');
   await frame(page.locator('.evidence-panel'));
   await page.getByRole('button', { name: 'Upload supporting document', exact: true }).click();
   const dialog = page.locator('dialog[open]');
@@ -287,6 +306,7 @@ async function upload(kind, reference, file) {
   );
   assert(document, 'Uploaded source is missing from the persisted case.');
   await expect(page.getByRole('dialog')).not.toBeVisible();
+  await openSource(document);
   await frame(page.locator('.evidence-panel'));
   log(`UPLOAD ${reference}; actual worker processing remains visible.`);
   return document;
@@ -325,12 +345,17 @@ async function waitForExtraction(document) {
   return { record, document: verified };
 }
 async function evidenceField(label) {
-  const button = page.locator('.evidence-fields button').filter({ hasText: label }).first();
-  await button.click();
+  const field = page.getByRole('combobox', { name: 'Inspect source field', exact: true });
+  const option = field
+    .locator('option')
+    .filter({ hasText: new RegExp(label, 'i') })
+    .first();
+  const value = await option.getAttribute('value');
+  assert(value !== null, `No extracted ${label} field is available.`);
+  await field.selectOption(value);
   await expect(page.locator('.document-paper mark')).toBeVisible();
   await frame(page.locator('.evidence-panel'));
-  // The application scrolls its source <pre> to the selected quote; verify that
-  // nested clipping has not left the highlight outside the visible source panel.
+  // Only the explicit source reader may scroll to the selected evidence quote.
   await expect(page.locator('.document-paper pre mark')).toBeInViewport();
 }
 async function navigateDocument(url, locatorFactory) {
@@ -381,6 +406,12 @@ try {
         `Publish the repository and required document before recording: ${url}`,
       );
       await pause(4000);
+      if (url === comparisonURL) {
+        await expect(
+          checkPage.getByRole('heading', { name: comparisonHeading, exact: true }).first(),
+        ).toBeVisible();
+        await expect(checkPage.getByText(comparisonBuyer).first()).toBeVisible();
+      }
     }
   } finally {
     await preflight.close();
@@ -501,6 +532,7 @@ try {
     await evidenceField('Quantity');
   });
   await narrate(3, 8, async () => {
+    await caseTab('Overview');
     await frame(page.locator('.matching-panel'));
     await expect(page.locator('.discrepancy-banner')).toContainText('$400');
   });
@@ -538,6 +570,7 @@ try {
     if (await updated.isVisible()) planned = await clickAction('propose', updated);
     else {
       await page.getByRole('button', { name: 'Close review', exact: true }).click();
+      await caseTab('Overview');
       planned = await clickAction(
         'propose',
         page.getByRole('button', { name: 'Prepare resolution', exact: true }).first(),
@@ -563,12 +596,14 @@ try {
       1,
     );
     assert.equal(heldCase.tasks.length, 1);
+    await caseTab('Overview');
     await expect(page.locator('.case-header .status-badge')).toHaveText('On hold', {
       timeout: 15_000,
     });
   });
   await narrate(4, 2, async () => {
-    await page.getByRole('tab', { name: /^Activity/ }).click();
+    await caseTab('Activity');
+    await page.getByRole('button', { name: 'Execution receipts', exact: true }).click();
     await frame(page.locator('.execution-panel'));
     const repeated = await clickAction(
       'retry',
@@ -592,6 +627,7 @@ try {
     assert.equal(credit?.applied, false);
     assert.equal(verifiedCredit.record.heldCents, 40_000);
     assert.equal(verifiedCredit.record.appliedCreditCents, 0);
+    await caseTab('Overview');
     await frame(page.locator('.resolution-panel'));
   });
   await narrate(4, 6, async () => {
@@ -636,7 +672,8 @@ try {
   });
   await narrate(4, 9, exportCase);
   await narrate(4, 10, async () => {
-    await page.getByRole('tab', { name: /^Activity/ }).click();
+    await caseTab('Activity');
+    await page.getByRole('button', { name: 'History', exact: true }).click();
     await frame(page.locator('.timeline-panel'));
   });
   await narrate(4, 11);
@@ -674,13 +711,18 @@ try {
   await narrate(6, 4);
   await subtitle('');
   await navigateDocument(comparisonURL, () =>
-    page.getByText('A focused workflow in an established category', { exact: true }).first(),
+    page
+      .getByRole('heading', {
+        name: comparisonHeading,
+        exact: true,
+      })
+      .first(),
   );
   await narrate(7, 0);
   await narrate(7, 1);
   await narrate(7, 2);
   await narrate(7, 3, async () => {
-    await frame(page.getByText(/Target buyer: finance manager at a small distributor/).first());
+    await frame(page.getByText(comparisonBuyer).first());
   });
   await narrate(7, 4);
 

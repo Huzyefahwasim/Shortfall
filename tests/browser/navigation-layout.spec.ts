@@ -1,11 +1,18 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { seedCases } from '../../src/lib/domain';
 import type { CaseRecord, WorkspaceResponse } from '../../src/lib/types';
+import {
+  expectFullyVisible,
+  expectNoInternalOverflow,
+  installLayoutWorkspace,
+  readAllPages,
+} from './layout-fixture';
 
 const origin = process.env.TEST_BASE_URL || 'http://localhost:3000';
 const viewports = [
-  { width: 1280, height: 560 },
-  { width: 1366, height: 650 },
-  { width: 1440, height: 760 },
+  { width: 1280, height: 500 },
+  { width: 1280, height: 550 },
+  { width: 1010, height: 500 },
   { width: 390, height: 700 },
 ];
 
@@ -33,6 +40,7 @@ async function expectPageFits(page: Page, desktop: boolean) {
       dimensions.height + 2,
     );
     expect(dimensions.top, 'desktop navigation scrolled the page itself').toBe(0);
+    await expectNoInternalOverflow(page);
   }
 }
 
@@ -93,25 +101,63 @@ for (const viewport of viewports) {
   }) => {
     test.setTimeout(120000);
     await page.setViewportSize(viewport);
+    await installLayoutWorkspace(page);
     const desktop = viewport.width >= 1000;
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Resolve an invoice exception' })).toBeVisible();
-    await expectReachable(page.getByRole('button', { name: /Explore a sample case/ }));
-    await expectReachable(page.getByRole('button', { name: /Create your own case/ }));
+    const inspectControl = desktop ? expectFullyVisible : expectReachable;
+    await inspectControl(page.getByRole('button', { name: /Explore a sample case/ }));
+    await inspectControl(page.getByRole('button', { name: /Create your own case/ }));
     await expectPageFits(page, desktop);
+    await page.screenshot({
+      path: `.deploy/layout-v3-fixture-entry-${viewport.width}x${viewport.height}.png`,
+    });
     await page.getByRole('button', { name: /Explore a sample case/ }).click();
     await expect(page.getByRole('heading', { name: 'The exception desk' })).toBeVisible({
       timeout: 45000,
     });
-    await expectReachable(page.getByRole('button', { name: 'Prepare resolution', exact: true }));
+    if (!desktop)
+      await expectFullyVisible(
+        page.getByRole('button', { name: 'Prepare resolution', exact: true }),
+      );
+    for (const name of ['Prepare resolution', 'Add receipt', 'Record supplier credit'])
+      await inspectControl(page.getByRole('button', { name, exact: true }));
+    for (const name of ['Overview', 'Documents', 'Activity'])
+      await inspectControl(page.getByRole('tab', { name: new RegExp(`^${name}`) }));
+    if (desktop) {
+      await expectFullyVisible(page.getByRole('button', { name: 'Guided case', exact: true }));
+      await expectFullyVisible(page.locator('.discrepancy-banner'));
+      await expectFullyVisible(page.locator('.matching-panel'));
+      await expectFullyVisible(page.locator('.resolution-panel'));
+      await expectFullyVisible(page.getByRole('link', { name: 'Export', exact: true }));
+    }
     await expectPageFits(page, desktop);
+
+    await page.screenshot({
+      path: `.deploy/layout-v3-fixture-overview-${viewport.width}x${viewport.height}.png`,
+    });
 
     await page.getByRole('tab', { name: /^Activity/ }).click();
     await expect(page.getByRole('heading', { name: 'Case history' })).toBeVisible();
     await expectPageFits(page, desktop);
-    await page.getByRole('tab', { name: 'Evidence & resolution' }).click();
+    await page.getByRole('tab', { name: /^Documents/ }).click();
+    await inspectControl(
+      page.getByRole('button', { name: 'Upload supporting document', exact: true }),
+    );
+    await expectPageFits(page, desktop);
+    await page.getByRole('tab', { name: 'Overview', exact: true }).click();
 
     const navigation = page.getByRole('navigation', { name: 'Main navigation' });
+    await navigation.getByRole('button', { name: 'Home', exact: true }).click();
+    for (const name of ['Return to workspace', 'End session'])
+      await inspectControl(page.getByRole('button', { name, exact: true }));
+    await inspectControl(page.getByRole('button', { name: /Explore a sample case/ }));
+    await inspectControl(page.getByRole('button', { name: /Create your own case/ }));
+    await expectPageFits(page, desktop);
+    await page.screenshot({
+      path: `.deploy/layout-v3-fixture-home-${viewport.width}x${viewport.height}.png`,
+    });
+    await page.getByRole('button', { name: 'Return to workspace', exact: true }).click();
     await navigation.getByRole('button', { name: 'Activity', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Workspace activity' })).toBeVisible();
     await expectReachable(page.getByRole('button', { name: 'Refresh', exact: true }));
@@ -123,64 +169,183 @@ for (const viewport of viewports) {
 
     await page.getByRole('button', { name: 'New case', exact: true }).click();
     await inspectDialog(page, 'Open a new case', 'Create case', desktop);
+    await page.getByRole('tab', { name: /^Documents/ }).click();
     await page.getByRole('button', { name: 'Upload supporting document', exact: true }).click();
     await inspectDialog(page, 'Attach supporting evidence', 'Upload document', desktop);
+    await page.getByRole('tab', { name: 'Overview', exact: true }).click();
     await page.getByRole('button', { name: 'Add receipt', exact: true }).click();
     await inspectDialog(page, 'Record accepted goods', 'Record evidence', desktop);
     await page.getByRole('button', { name: 'Record supplier credit', exact: true }).click();
     await inspectDialog(page, 'Record supplier credit', 'Record evidence', desktop);
-    await page.locator('.owner-control').click();
+    await page.getByRole('button', { name: 'Case details and assignment', exact: true }).click();
+    await page.getByRole('button', { name: 'Assign owner and reviewer', exact: true }).click();
     await inspectDialog(page, 'Assign the work', 'Save assignments', desktop);
     await page.getByRole('button', { name: 'Reset sample workspace', exact: true }).click();
     await inspectDialog(page, 'Reset this workspace?', 'Reset sample data', desktop);
     await page.getByRole('button', { name: 'Prepare resolution', exact: true }).click();
     await inspectDialog(page, 'Review the proposed hold', 'Approve changes', desktop);
+    await page.getByRole('button', { name: 'Add receipt', exact: true }).click();
+    await page.getByLabel('Accepted quantity', { exact: true }).fill('10');
+    await page.getByLabel('Receipt reference', { exact: true }).fill('LAYOUT-LATE-10');
+    await page.getByRole('button', { name: 'Record evidence', exact: true }).click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(
+      page.getByText('Receipt recorded. Review the updated discrepancy before approving changes.'),
+    ).toBeVisible();
+    await expect(page.locator('.discrepancy-banner')).toContainText('$400');
+    if (desktop)
+      await expectFullyVisible(page.getByRole('button', { name: 'Guided case', exact: true }));
+    await inspectControl(page.getByRole('button', { name: 'Prepare resolution', exact: true }));
+    await inspectControl(
+      page.getByRole('button', { name: 'Review previous proposal', exact: true }),
+    );
+    await expectPageFits(page, desktop);
+    await page.screenshot({
+      path: `.deploy/layout-v3-fixture-stale-${viewport.width}x${viewport.height}.png`,
+    });
     await page.getByRole('button', { name: 'End session', exact: true }).click();
     await inspectDialog(page, 'End this session?', 'End session', desktop);
     await expectPageFits(page, desktop);
   });
 }
 
-test('long source text scrolls inside the evidence panel and leaves the primary action available', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1280, height: 560 });
-  await enterSample(page);
-  const response = await page.request.get('/api/workspace');
-  expect(response.ok()).toBeTruthy();
-  const workspace = (await response.json()) as WorkspaceResponse;
-  const original = workspace.cases.find((item) => item.poNumber === 'PO-1042')!;
-  const longRecord = structuredClone(original);
-  // Render-only fixture: no upload, inference call, or mutation of the stored source.
-  const invoice = longRecord.documents.find((document) => document.kind === 'invoice')!;
-  invoice.text += `\n${'Long supplier reference '.repeat(80)}\n${Array.from(
+test('source reading is explicit and only the open reader scrolls', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 500 });
+  const records = seedCases();
+  const original = records.find((item) => item.poNumber === 'PO-1042')!;
+  const invoice = original.documents.find((document) => document.kind === 'invoice')!;
+  invoice.text += `\n${'Long supplier reference '.repeat(80)}\nUNBROKEN-${'X'.repeat(500)}\n${Array.from(
     { length: 180 },
     (_, index) => `Supporting record line ${index + 1}: retained quantity evidence.`,
   ).join('\n')}\nEND OF LONG SOURCE`;
-  await page.route(`**/api/cases/${original.id}`, async (route) => {
-    if (route.request().method() === 'GET') await route.fulfill({ json: longRecord });
-    else await route.continue();
+  const quote = 'END OF LONG SOURCE';
+  invoice.evidence.push({
+    field: 'reference',
+    value: quote,
+    quote,
+    start: invoice.text.indexOf(quote),
+    end: invoice.text.indexOf(quote) + quote.length,
   });
-  await page.getByRole('button', { name: 'Refresh cases', exact: true }).click();
+  await installLayoutWorkspace(page, records);
+  await enterSample(page);
+  await expect(page.locator('.document-paper pre')).toHaveCount(0);
+  await expectPageFits(page, true);
+  await page.getByRole('tab', { name: /^Documents/ }).click();
+  await expect(page.locator('.document-paper pre')).toHaveCount(0);
+  await page.locator(`[data-document-id="${invoice.id}"]`).click();
   const source = page.locator('.document-paper pre');
   await expect(source).toContainText('END OF LONG SOURCE');
   const overflow = await source.evaluate((element) => ({
     client: element.clientHeight,
     scroll: element.scrollHeight,
     overflowY: getComputedStyle(element).overflowY,
+    width: element.clientWidth,
+    contentWidth: element.scrollWidth,
   }));
   expect(overflow.client).toBeGreaterThan(0);
   expect(overflow.scroll).toBeGreaterThan(overflow.client);
   expect(['auto', 'scroll']).toContain(overflow.overflowY);
-  await source.hover();
-  await page.mouse.wheel(0, 10000);
+  expect(
+    overflow.contentWidth,
+    'long source lines must wrap without a horizontal scrollbar',
+  ).toBeLessThanOrEqual(overflow.width + 1);
+  await expectNoInternalOverflow(page, '.document-paper pre');
+  const field = page.getByRole('combobox', { name: 'Inspect source field', exact: true });
+  const option = await field.locator('option').filter({ hasText: quote }).getAttribute('value');
+  expect(option).not.toBeNull();
+  await field.selectOption(option!);
+  await expect(source.locator('mark')).toHaveText(quote);
+  await expectFullyVisible(source.locator('mark'));
+  await page.screenshot({ path: '.deploy/layout-v3-fixture-source-1280x500.png' });
   await expect.poll(() => source.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
-  await expect(
-    page.getByRole('button', { name: 'Prepare resolution', exact: true }),
-  ).toBeInViewport({
-    ratio: 0.95,
-  });
-  await expectReachable(page.getByRole('button', { name: 'Prepare resolution', exact: true }));
+  await expectFullyVisible(page.getByRole('button', { name: 'Close source', exact: true }));
+  await page.getByRole('button', { name: 'Close source', exact: true }).click();
+  await expect(source).toHaveCount(0);
+  await expect(page.locator(`[data-document-id="${invoice.id}"]`)).toBeFocused();
+  await expectPageFits(page, true);
+  await page.getByRole('tab', { name: 'Overview', exact: true }).click();
+  await expectFullyVisible(page.getByRole('button', { name: 'Prepare resolution', exact: true }));
+  await expectPageFits(page, true);
+});
+
+test('queue, document, and activity pagination show every record exactly once', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1010, height: 500 });
+  const records = seedCases();
+  const original = records[0];
+  for (let index = records.length; index < 10; index++) {
+    records.push({
+      ...structuredClone(original),
+      id: `layout-case-${index}`,
+      supplier: `Pagination supplier ${index}`,
+      poNumber: `PAGE-PO-${index}`,
+      invoiceNumber: `PAGE-INV-${index}`,
+      history: [],
+    });
+  }
+  original.history = Array.from({ length: 23 }, (_, index) => ({
+    id: `event-${index}`,
+    type: 'layout_fixture',
+    title: `History event ${index + 1}`,
+    detail: `Distinct retained event ${index + 1}`,
+    actor: 'Reviewer',
+    revision: index + 1,
+    at: new Date(Date.UTC(2026, 10, 1, 0, index)).toISOString(),
+  }));
+  const invoice = original.documents.find((document) => document.kind === 'invoice')!;
+  original.documents = Array.from({ length: 17 }, (_, index) => ({
+    ...structuredClone(invoice),
+    id: `document-${index}`,
+    reference: `DOC-${index}`,
+  }));
+  await installLayoutWorkspace(page, records);
+  await enterSample(page);
+  const queueIds = await readAllPages(
+    page.locator('[data-case-id]'),
+    page.getByRole('navigation', { name: 'Case queue pagination', exact: true }),
+    'data-case-id',
+  );
+  expect(queueIds).toHaveLength(records.length);
+  expect(new Set(queueIds).size).toBe(records.length);
+  expect([...queueIds].sort()).toEqual(records.map((record) => record.id).sort());
+  await expectPageFits(page, true);
+
+  await page.getByRole('tab', { name: /^Documents/ }).click();
+  const documentIds = await readAllPages(
+    page.locator('[data-document-id]'),
+    page.getByRole('navigation', { name: 'Documents pagination', exact: true }),
+    'data-document-id',
+  );
+  expect(documentIds).toHaveLength(original.documents.length);
+  expect(new Set(documentIds).size).toBe(original.documents.length);
+  expect([...documentIds].sort()).toEqual(original.documents.map((document) => document.id).sort());
+  await expectPageFits(page, true);
+
+  await page.getByRole('tab', { name: /^Activity/ }).click();
+  const historyIds = await readAllPages(
+    page.locator('.timeline-panel [data-event-id]'),
+    page.getByRole('navigation', { name: 'Case history pagination', exact: true }),
+    'data-event-id',
+  );
+  expect(historyIds).toEqual([...original.history].reverse().map((event) => event.id));
+  expect(new Set(historyIds).size).toBe(original.history.length);
+  await expectPageFits(page, true);
+
+  await page
+    .getByRole('navigation', { name: 'Main navigation' })
+    .getByRole('button', { name: 'Activity', exact: true })
+    .click();
+  const activityIds = await readAllPages(
+    page.locator('[data-event-id]'),
+    page.getByRole('navigation', { name: 'Workspace activity pagination', exact: true }),
+    'data-event-id',
+  );
+  const events = records
+    .flatMap((record) => record.history)
+    .sort((a, b) => b.at.localeCompare(a.at));
+  expect(activityIds).toEqual(events.map((event) => event.id));
+  expect(new Set(activityIds).size).toBe(events.length);
   await expectPageFits(page, true);
 });
 
