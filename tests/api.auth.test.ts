@@ -9,6 +9,7 @@ import {
   setSessionCookie,
 } from '../src/lib/auth';
 import { DomainError } from '../src/lib/domain';
+import { DELETE as endSessionRequest } from '../src/app/api/session/route';
 
 test('mutations reject missing and foreign origins', () => {
   const before = process.env.APP_ORIGIN;
@@ -58,6 +59,55 @@ test('unexpected database errors do not expose connection details', async () => 
   assert.equal(response.status, 503);
   assert.ok(!body.includes('placeholder-password'));
   assert.ok(!body.includes('private-host'));
+});
+
+test('ending a missing session is idempotent and expires the same secure cookie', async () => {
+  const before = process.env.APP_ORIGIN;
+  process.env.APP_ORIGIN = 'https://shortfall.example';
+  try {
+    for (const cookie of [undefined, 'shortfall_session=invalid-token', undefined]) {
+      const response = await endSessionRequest(
+        new NextRequest('http://web:3000/api/session', {
+          method: 'DELETE',
+          headers: { origin: 'https://shortfall.example', ...(cookie ? { cookie } : {}) },
+        }),
+      );
+      assert.equal(response.status, 200);
+      assert.deepEqual(await response.json(), { ended: true });
+      const ended = response.cookies.get('shortfall_session');
+      assert.equal(ended?.value, '');
+      assert.equal(ended?.path, '/');
+      assert.equal(ended?.httpOnly, true);
+      assert.equal(ended?.secure, true);
+      assert.equal(ended?.sameSite, 'lax');
+      assert.equal(ended?.maxAge, 0);
+      assert.ok(ended?.expires && new Date(ended.expires).getTime() <= Date.now());
+    }
+  } finally {
+    if (before === undefined) delete process.env.APP_ORIGIN;
+    else process.env.APP_ORIGIN = before;
+  }
+});
+
+test('ending a session rejects missing and foreign origins before touching access', async () => {
+  const before = process.env.APP_ORIGIN;
+  process.env.APP_ORIGIN = 'https://shortfall.example';
+  try {
+    for (const origin of [undefined, 'https://different.example']) {
+      const response = await endSessionRequest(
+        new NextRequest('https://shortfall.example/api/session', {
+          method: 'DELETE',
+          headers: { cookie: `shortfall_session=${'a'.repeat(64)}`, ...(origin ? { origin } : {}) },
+        }),
+      );
+      assert.equal(response.status, 403);
+      assert.equal((await response.json()).code, 'INVALID_ORIGIN');
+      assert.equal(response.headers.get('set-cookie'), null);
+    }
+  } finally {
+    if (before === undefined) delete process.env.APP_ORIGIN;
+    else process.env.APP_ORIGIN = before;
+  }
 });
 test('public origin remains valid behind the private HTTP reverse proxy', () => {
   const before = process.env.APP_ORIGIN;

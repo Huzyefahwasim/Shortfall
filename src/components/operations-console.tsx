@@ -15,10 +15,12 @@ import {
   FileCheck2,
   FileText,
   History,
+  House,
   Inbox,
   ListChecks,
   LoaderCircle,
   LockKeyhole,
+  LogOut,
   PackageCheck,
   Plus,
   RefreshCw,
@@ -45,6 +47,7 @@ type Totals = {
 };
 interface ConsoleProps {
   onGuide: () => void;
+  onEndSession: () => void;
   guideVisible: boolean;
   onHideGuide: () => void;
   workspace: WorkspaceResponse | null;
@@ -135,6 +138,7 @@ function Empty({ title, detail }: { title: string; detail: string }) {
 export function OperationsConsole(props: ConsoleProps) {
   const {
     onGuide,
+    onEndSession,
     guideVisible,
     onHideGuide,
     workspace,
@@ -229,13 +233,13 @@ export function OperationsConsole(props: ConsoleProps) {
         Skip to workspace
       </a>
       <header className="appbar">
-        <a className="wordmark" href="/" aria-label="Shortfall workspace">
+        <button className="wordmark" onClick={onGuide} aria-label="Shortfall home">
           <span className="wordmark-symbol" aria-hidden="true">
             <span />
             <span />
           </span>
           Shortfall<span className="product-area">Payables</span>
-        </a>
+        </button>
         <nav className="main-nav" aria-label="Main navigation">
           <button className={view === 'desk' ? 'active' : ''} onClick={() => onView('desk')}>
             <Inbox size={16} />
@@ -253,8 +257,8 @@ export function OperationsConsole(props: ConsoleProps) {
             Policy
           </button>
           <button onClick={onGuide}>
-            <ListChecks size={16} />
-            Guide
+            <House size={16} />
+            Home
           </button>
         </nav>
         <div className="appbar-end">
@@ -270,10 +274,14 @@ export function OperationsConsole(props: ConsoleProps) {
           >
             <RefreshCw size={16} />
           </button>
+          <button className="session-control" onClick={onEndSession} disabled={!!busy}>
+            <LogOut size={15} />
+            End session
+          </button>
         </div>
       </header>
 
-      <main className="main" id="main-content">
+      <main className="main" id="main-content" tabIndex={-1}>
         <div className="page-header">
           <div>
             <div className="eyebrow">FINANCE OPERATIONS</div>
@@ -406,7 +414,7 @@ export function OperationsConsole(props: ConsoleProps) {
                 <span>SUPPLIER / INVOICE</span>
                 <span>GAP</span>
               </div>
-              <div className="case-list">
+              <div className="case-list" tabIndex={0} aria-label="Cases">
                 {visibleCases.length ? (
                   visibleCases.map((record) => (
                     <button
@@ -442,10 +450,8 @@ export function OperationsConsole(props: ConsoleProps) {
               </div>
               <div className="queue-footer">
                 <span className="queue-footer-rule" />
-                <strong>Workspace boundary</strong>
-                <p>
-                  Synthetic documents. Internal ledger. Your cases are isolated from other visitors.
-                </p>
+                <strong>Private workspace</strong>
+                <p>Synthetic data · Internal ledger.</p>
               </div>
             </section>
 
@@ -499,506 +505,522 @@ export function OperationsConsole(props: ConsoleProps) {
                     )}
                   </div>
                 </div>
-                {guideVisible && selected.poNumber === 'PO-1042' && (
-                  <div className="guided-strip">
-                    <span className="guided-index">GUIDED CASE</span>
-                    <div>
-                      <strong>{guideCopy[0]}</strong>
-                      <p>{guideCopy[1]}</p>
-                    </div>
-                    {guideStage === 'complete' ? (
-                      <a
-                        className="button secondary small"
-                        href={`/api/cases/${selected.id}/export?format=json`}
-                        download
-                      >
-                        Download case record
-                        <ArrowDownToLine size={14} />
-                      </a>
-                    ) : (
-                      <button
-                        className="button secondary small"
-                        disabled={!!busy}
-                        onClick={() => {
-                          if (guideStage === 'receipt' || guideStage === 'credit')
-                            onModal('upload');
-                          else if (guideStage === 'stale' && staleProposal) onReview(staleProposal);
-                          else if (activeProposal) onReview(activeProposal);
-                          else onPropose();
-                        }}
-                      >
-                        {guideStage === 'receipt' || guideStage === 'credit'
-                          ? 'Open sample documents'
-                          : guideStage === 'stale'
-                            ? 'Inspect outdated proposal'
-                            : 'Start review'}
-                        <ArrowRight size={14} />
-                      </button>
-                    )}
-                    <button
-                      className="icon-button"
-                      aria-label="Hide guided case instructions"
-                      onClick={onHideGuide}
-                    >
-                      <X size={15} />
-                    </button>
-                  </div>
-                )}
-                <div className="case-meta">
-                  <span>
-                    ORDER <strong>{selected.poNumber}</strong>
-                  </span>
-                  <span>
-                    ITEM <strong>{selected.sku}</strong>
-                  </span>
-                  <button className="owner-control" onClick={() => onModal('assign')}>
-                    <Users size={14} />
-                    <span>{selected.owner || 'Assign owner'}</span>
-                    <ChevronDown size={12} />
-                  </button>
-                  <span className="reviewer-label">
-                    REVIEWER <strong>{selected.reviewer || 'Unassigned'}</strong>
-                  </span>
-                </div>
-
                 <div
-                  className={`discrepancy-banner ${selected.status === 'resolved' ? 'is-resolved' : ''}`}
+                  className="case-scroll"
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Case evidence and history"
                 >
-                  <div>
-                    <span>INVOICED</span>
-                    <strong>{money(sum.grossCents)}</strong>
-                    <small>
-                      {selected.invoicedUnits} units × {money(selected.unitPriceCents)}
-                    </small>
-                  </div>
-                  <div>
-                    <span>ACCEPTED</span>
-                    <strong>{money(sum.receivedCents)}</strong>
-                    <small>{sum.receivedUnits} units received</small>
-                  </div>
-                  <div className="gap-summary">
-                    <span>{selected.status === 'resolved' ? 'RECONCILED' : 'UNRECONCILED'}</span>
-                    <strong>
-                      {selected.status === 'resolved' ? (
-                        <>
-                          <CheckCheck size={22} />
-                          {money(sum.netCents)} reconciled
-                        </>
-                      ) : (
-                        money(sum.discrepancyCents)
-                      )}
-                    </strong>
-                    <small>
-                      {selected.status === 'resolved'
-                        ? `${sum.openPoUnits} units remain open on the purchase order.`
-                        : `${sum.missingUnits} units not yet received`}
-                    </small>
-                  </div>
-                </div>
-
-                {staleProposal && (
-                  <div className="revision-signal">
-                    <span className="revision-symbol">
-                      <History size={18} />
-                    </span>
-                    <div>
-                      <strong>Evidence changed after this proposal</strong>
-                      <p>
-                        <span>
-                          r{staleProposal.sourceRevision} · {money(staleProposal.amountCents)}
-                        </span>
-                        <ArrowRight size={14} />
-                        <span>
-                          r{selected.sourceRevision} · {money(nextHold)}
-                        </span>
-                        <small>proposed hold</small>
-                      </p>
-                    </div>
-                    <button className="button secondary" onClick={() => onReview(staleProposal)}>
-                      Review previous proposal
-                      <ArrowUpRight size={14} />
-                    </button>
-                  </div>
-                )}
-
-                <div className="case-tabs">
-                  <div role="tablist" aria-label="Case details">
-                    <button
-                      role="tab"
-                      aria-selected={tab === 'evidence'}
-                      className={tab === 'evidence' ? 'active' : ''}
-                      onClick={() => onTab('evidence')}
-                    >
-                      <FileText size={16} />
-                      Evidence & resolution
-                    </button>
-                    <button
-                      role="tab"
-                      aria-selected={tab === 'activity'}
-                      className={tab === 'activity' ? 'active' : ''}
-                      onClick={() => onTab('activity')}
-                    >
-                      <History size={16} />
-                      Activity<span>{selected.history.length}</span>
-                    </button>
-                  </div>
-                  <a
-                    className="export-link"
-                    href={`/api/cases/${selected.id}/export?format=json`}
-                    download
-                  >
-                    <ArrowDownToLine size={15} />
-                    <span>Export</span>
-                  </a>
-                </div>
-
-                {tab === 'evidence' ? (
-                  <>
-                    <div className="workbench-grid">
-                      <section className="evidence-panel">
-                        <div className="section-title compact">
-                          <div>
-                            <span className="section-index">01</span>
-                            <h3>Source evidence</h3>
-                            <span className="count-badge">{selected.documents.length}</span>
-                          </div>
-                          <button
-                            className="button secondary small"
-                            aria-label="Upload supporting document"
-                            onClick={() => onModal('upload')}
-                          >
-                            <Upload size={15} />
-                            Upload
-                          </button>
-                        </div>
-                        <div className="document-tabs">
-                          {selected.documents.map((document) => (
-                            <button
-                              key={document.id}
-                              className={currentDocument?.id === document.id ? 'active' : ''}
-                              onClick={() => onDocument(document.id)}
+                  {guideVisible && selected.poNumber === 'PO-1042' && (
+                    <div className="guided-strip">
+                      <span className="guided-index">GUIDED CASE</span>
+                      <details className="guided-copy">
+                        <summary>{guideCopy[0]}</summary>
+                        <div className="guided-expanded">
+                          <p>{guideCopy[1]}</p>
+                          {guideStage === 'complete' ? (
+                            <a
+                              className="button secondary small"
+                              href={`/api/cases/${selected.id}/export?format=json`}
+                              download
                             >
-                              <span>{documentLabels[document.kind]}</span>
-                              <small>{document.reference}</small>
-                              {document.status === 'pending' ? (
-                                <LoaderCircle size={13} className="spin" />
-                              ) : document.status === 'needs_review' ? (
-                                <CircleAlert size={13} />
-                              ) : (
-                                <Check size={13} />
-                              )}
+                              Download case record
+                              <ArrowDownToLine size={14} />
+                            </a>
+                          ) : (
+                            <button
+                              className="button secondary small"
+                              disabled={!!busy}
+                              onClick={() => {
+                                if (guideStage === 'receipt' || guideStage === 'credit')
+                                  onModal('upload');
+                                else if (guideStage === 'stale' && staleProposal)
+                                  onReview(staleProposal);
+                                else if (activeProposal) onReview(activeProposal);
+                                else onPropose();
+                              }}
+                            >
+                              {guideStage === 'receipt' || guideStage === 'credit'
+                                ? 'Open sample documents'
+                                : guideStage === 'stale'
+                                  ? 'Inspect outdated proposal'
+                                  : 'Start review'}
+                              <ArrowRight size={14} />
                             </button>
-                          ))}
+                          )}
                         </div>
-                        {currentDocument ? (
-                          renderEvidence(currentDocument)
-                        ) : (
-                          <Empty
-                            title="No supporting documents"
-                            detail="Upload a source document or record the accepted quantity."
-                          />
-                        )}
-                        <button className="upload-inline" onClick={() => onModal('upload')}>
-                          <Upload size={15} />
-                          Add supporting document
-                          <Plus size={15} />
-                        </button>
-                      </section>
+                      </details>
+                      <button
+                        className="icon-button"
+                        aria-label="Hide guided case instructions"
+                        onClick={onHideGuide}
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
+                  )}
+                  <div className="case-meta">
+                    <span>
+                      ORDER <strong>{selected.poNumber}</strong>
+                    </span>
+                    <span>
+                      ITEM <strong>{selected.sku}</strong>
+                    </span>
+                    <button className="owner-control" onClick={() => onModal('assign')}>
+                      <Users size={14} />
+                      <span>{selected.owner || 'Assign owner'}</span>
+                      <ChevronDown size={12} />
+                    </button>
+                    <span className="reviewer-label">
+                      REVIEWER <strong>{selected.reviewer || 'Unassigned'}</strong>
+                    </span>
+                  </div>
 
-                      <div className="record-column">
-                        <section className="matching-panel">
+                  <div
+                    className={`discrepancy-banner ${selected.status === 'resolved' ? 'is-resolved' : ''}`}
+                  >
+                    <div>
+                      <span>INVOICED</span>
+                      <strong>{money(sum.grossCents)}</strong>
+                      <small>
+                        {selected.invoicedUnits} units × {money(selected.unitPriceCents)}
+                      </small>
+                    </div>
+                    <div>
+                      <span>ACCEPTED</span>
+                      <strong>{money(sum.receivedCents)}</strong>
+                      <small>{sum.receivedUnits} units received</small>
+                    </div>
+                    <div className="gap-summary">
+                      <span>{selected.status === 'resolved' ? 'RECONCILED' : 'UNRECONCILED'}</span>
+                      <strong>
+                        {selected.status === 'resolved' ? (
+                          <>
+                            <CheckCheck size={22} />
+                            {money(sum.netCents)} reconciled
+                          </>
+                        ) : (
+                          money(sum.discrepancyCents)
+                        )}
+                      </strong>
+                      <small>
+                        {selected.status === 'resolved'
+                          ? `${sum.openPoUnits} units remain open on the purchase order.`
+                          : `${sum.missingUnits} units not yet received`}
+                      </small>
+                    </div>
+                  </div>
+
+                  {staleProposal && (
+                    <div className="revision-signal">
+                      <span className="revision-symbol">
+                        <History size={18} />
+                      </span>
+                      <div>
+                        <strong>Evidence changed after this proposal</strong>
+                        <p>
+                          <span>
+                            r{staleProposal.sourceRevision} · {money(staleProposal.amountCents)}
+                          </span>
+                          <ArrowRight size={14} />
+                          <span>
+                            r{selected.sourceRevision} · {money(nextHold)}
+                          </span>
+                          <small>proposed hold</small>
+                        </p>
+                      </div>
+                      <button className="button secondary" onClick={() => onReview(staleProposal)}>
+                        Review previous proposal
+                        <ArrowUpRight size={14} />
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="case-tabs">
+                    <div role="tablist" aria-label="Case details">
+                      <button
+                        role="tab"
+                        aria-selected={tab === 'evidence'}
+                        className={tab === 'evidence' ? 'active' : ''}
+                        onClick={() => onTab('evidence')}
+                      >
+                        <FileText size={16} />
+                        Evidence & resolution
+                      </button>
+                      <button
+                        role="tab"
+                        aria-selected={tab === 'activity'}
+                        className={tab === 'activity' ? 'active' : ''}
+                        onClick={() => onTab('activity')}
+                      >
+                        <History size={16} />
+                        Activity<span>{selected.history.length}</span>
+                      </button>
+                    </div>
+                    <a
+                      className="export-link"
+                      href={`/api/cases/${selected.id}/export?format=json`}
+                      download
+                    >
+                      <ArrowDownToLine size={15} />
+                      <span>Export</span>
+                    </a>
+                  </div>
+
+                  {tab === 'evidence' ? (
+                    <>
+                      <div className="workbench-grid">
+                        <section className="evidence-panel">
                           <div className="section-title compact">
                             <div>
-                              <span className="section-index">02</span>
-                              <h3>Record comparison</h3>
-                            </div>
-                            <span className="subtle-label">USD</span>
-                          </div>
-                          <div className="matching-table">
-                            <div className="matching-row matching-labels">
-                              <span>RECORD</span>
-                              <span>UNITS</span>
-                              <span>VALUE</span>
+                              <span className="section-index">01</span>
+                              <h3>Source evidence</h3>
+                              <span className="count-badge">{selected.documents.length}</span>
                             </div>
                             <button
-                              className="matching-row"
-                              onClick={() => {
-                                const document = selected.documents.find(
-                                  (entry) => entry.kind === 'purchase_order',
-                                );
-                                if (document) onDocument(document.id);
-                              }}
+                              className="button secondary small"
+                              aria-label="Upload supporting document"
+                              onClick={() => onModal('upload')}
                             >
-                              <span>
-                                <FileText size={15} />
-                                Purchase order
-                              </span>
-                              <span>{selected.orderedUnits}</span>
-                              <span>{money(selected.orderedUnits * selected.unitPriceCents)}</span>
-                            </button>
-                            <button
-                              className="matching-row"
-                              onClick={() => {
-                                const document = selected.documents.find(
-                                  (entry) => entry.kind === 'invoice',
-                                );
-                                if (document) onDocument(document.id);
-                              }}
-                            >
-                              <span>
-                                <FileText size={15} />
-                                Invoice
-                              </span>
-                              <span>{selected.invoicedUnits}</span>
-                              <span>{money(sum.grossCents)}</span>
-                            </button>
-                            <button
-                              className="matching-row received-row"
-                              onClick={() => {
-                                const document = [...selected.documents]
-                                  .reverse()
-                                  .find((entry) => entry.kind === 'receipt');
-                                if (document) onDocument(document.id);
-                              }}
-                            >
-                              <span>
-                                <PackageCheck size={15} />
-                                Accepted receipts
-                              </span>
-                              <span>{sum.receivedUnits}</span>
-                              <span>{money(sum.receivedCents)}</span>
-                            </button>
-                            {selected.credits.length > 0 && (
-                              <div className="matching-row credit-row">
-                                <span>
-                                  <FileCheck2 size={15} />
-                                  Supplier credit
-                                </span>
-                                <span>{sum.pendingCreditCents > 0 ? 'Pending' : 'Applied'}</span>
-                                <span>
-                                  −
-                                  {money(
-                                    selected.credits.reduce(
-                                      (total, credit) => total + credit.amountCents,
-                                      0,
-                                    ),
-                                  )}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="match-footer">
-                            <span>
-                              <ShieldCheck size={14} />
-                              Quantity matching policy
-                            </span>
-                            <button
-                              onClick={() => onModal('receipt')}
-                              disabled={!!busy || selected.status === 'resolved'}
-                            >
-                              <Plus size={15} />
-                              Add receipt
+                              <Upload size={15} />
+                              Upload
                             </button>
                           </div>
+                          <div className="document-tabs">
+                            {selected.documents.map((document) => (
+                              <button
+                                key={document.id}
+                                className={currentDocument?.id === document.id ? 'active' : ''}
+                                onClick={() => onDocument(document.id)}
+                              >
+                                <span>{documentLabels[document.kind]}</span>
+                                <small>{document.reference}</small>
+                                {document.status === 'pending' ? (
+                                  <LoaderCircle size={13} className="spin" />
+                                ) : document.status === 'needs_review' ? (
+                                  <CircleAlert size={13} />
+                                ) : (
+                                  <Check size={13} />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                          {currentDocument ? (
+                            renderEvidence(currentDocument)
+                          ) : (
+                            <Empty
+                              title="No supporting documents"
+                              detail="Upload a source document or record the accepted quantity."
+                            />
+                          )}
+                          <button className="upload-inline" onClick={() => onModal('upload')}>
+                            <Upload size={15} />
+                            Add supporting document
+                            <Plus size={15} />
+                          </button>
                         </section>
 
-                        <section className="resolution-panel">
-                          <div className="section-title compact">
-                            <div>
-                              <span className="section-index">03</span>
-                              <h3>
-                                {selected.status === 'resolved'
-                                  ? 'Resolution'
-                                  : 'Approval & execution'}
-                              </h3>
+                        <div className="record-column">
+                          <section className="matching-panel">
+                            <div className="section-title compact">
+                              <div>
+                                <span className="section-index">02</span>
+                                <h3>Record comparison</h3>
+                              </div>
+                              <span className="subtle-label">USD</span>
                             </div>
-                            {selected.status === 'resolved' && <CheckCheck size={17} />}
-                          </div>
-                          <div className="resolution-body">
-                            {selected.status === 'resolved' ? (
-                              <>
-                                <h4>Ready for export</h4>
-                                <p>
-                                  The invoice and applied credit match the accepted goods. No
-                                  payment has been made.
-                                </p>
-                                <div className="resolution-equation">
-                                  <span>Original invoice</span>
-                                  <strong>{money(sum.grossCents)}</strong>
-                                  <span>Applied credit</span>
-                                  <strong>−{money(selected.appliedCreditCents)}</strong>
-                                  <span className="equation-total">Reconciled amount</span>
-                                  <strong className="equation-total">{money(sum.netCents)}</strong>
-                                </div>
-                                <a
-                                  className="button primary full"
-                                  href={`/api/cases/${selected.id}/export?format=csv`}
-                                  download
-                                >
-                                  <ArrowDownToLine size={16} />
-                                  Export reconciliation
-                                </a>
-                              </>
-                            ) : (
-                              <>
-                                <div className="decision-intro">
-                                  <h4>
-                                    {sum.pendingCreditCents > 0
-                                      ? 'Apply supplier credit'
-                                      : selected.status === 'queued'
-                                        ? 'Applying approved changes'
-                                        : selected.status === 'on_hold'
-                                          ? 'Hold recorded'
-                                          : activeProposal
-                                            ? 'Ready for review'
-                                            : 'Proposed ledger change'}
-                                  </h4>
-                                  <span className="decision-state">
-                                    {selected.status === 'queued'
-                                      ? 'IN PROGRESS'
-                                      : selected.status === 'on_hold'
-                                        ? 'VERIFIED'
-                                        : 'REVIEW REQUIRED'}
+                            <div className="matching-table">
+                              <div className="matching-row matching-labels">
+                                <span>RECORD</span>
+                                <span>UNITS</span>
+                                <span>VALUE</span>
+                              </div>
+                              <button
+                                className="matching-row"
+                                onClick={() => {
+                                  const document = selected.documents.find(
+                                    (entry) => entry.kind === 'purchase_order',
+                                  );
+                                  if (document) onDocument(document.id);
+                                }}
+                              >
+                                <span>
+                                  <FileText size={15} />
+                                  Purchase order
+                                </span>
+                                <span>{selected.orderedUnits}</span>
+                                <span>
+                                  {money(selected.orderedUnits * selected.unitPriceCents)}
+                                </span>
+                              </button>
+                              <button
+                                className="matching-row"
+                                onClick={() => {
+                                  const document = selected.documents.find(
+                                    (entry) => entry.kind === 'invoice',
+                                  );
+                                  if (document) onDocument(document.id);
+                                }}
+                              >
+                                <span>
+                                  <FileText size={15} />
+                                  Invoice
+                                </span>
+                                <span>{selected.invoicedUnits}</span>
+                                <span>{money(sum.grossCents)}</span>
+                              </button>
+                              <button
+                                className="matching-row received-row"
+                                onClick={() => {
+                                  const document = [...selected.documents]
+                                    .reverse()
+                                    .find((entry) => entry.kind === 'receipt');
+                                  if (document) onDocument(document.id);
+                                }}
+                              >
+                                <span>
+                                  <PackageCheck size={15} />
+                                  Accepted receipts
+                                </span>
+                                <span>{sum.receivedUnits}</span>
+                                <span>{money(sum.receivedCents)}</span>
+                              </button>
+                              {selected.credits.length > 0 && (
+                                <div className="matching-row credit-row">
+                                  <span>
+                                    <FileCheck2 size={15} />
+                                    Supplier credit
+                                  </span>
+                                  <span>{sum.pendingCreditCents > 0 ? 'Pending' : 'Applied'}</span>
+                                  <span>
+                                    −
+                                    {money(
+                                      selected.credits.reduce(
+                                        (total, credit) => total + credit.amountCents,
+                                        0,
+                                      ),
+                                    )}
                                   </span>
                                 </div>
-                                <div className="ledger-delta">
-                                  <div>
-                                    <span>HELD NOW</span>
-                                    <strong>{money(selected.heldCents)}</strong>
+                              )}
+                            </div>
+                            <div className="match-footer">
+                              <span>
+                                <ShieldCheck size={14} />
+                                Quantity matching policy
+                              </span>
+                              <button
+                                onClick={() => onModal('receipt')}
+                                disabled={!!busy || selected.status === 'resolved'}
+                              >
+                                <Plus size={15} />
+                                Add receipt
+                              </button>
+                            </div>
+                          </section>
+
+                          <section className="resolution-panel">
+                            <div className="section-title compact">
+                              <div>
+                                <span className="section-index">03</span>
+                                <h3>
+                                  {selected.status === 'resolved'
+                                    ? 'Resolution'
+                                    : 'Approval & execution'}
+                                </h3>
+                              </div>
+                              {selected.status === 'resolved' && <CheckCheck size={17} />}
+                            </div>
+                            <div className="resolution-body">
+                              {selected.status === 'resolved' ? (
+                                <>
+                                  <h4>Ready for export</h4>
+                                  <p>
+                                    The invoice and applied credit match the accepted goods. No
+                                    payment has been made.
+                                  </p>
+                                  <div className="resolution-equation">
+                                    <span>Original invoice</span>
+                                    <strong>{money(sum.grossCents)}</strong>
+                                    <span>Applied credit</span>
+                                    <strong>−{money(selected.appliedCreditCents)}</strong>
+                                    <span className="equation-total">Reconciled amount</span>
+                                    <strong className="equation-total">
+                                      {money(sum.netCents)}
+                                    </strong>
                                   </div>
-                                  <ArrowRight size={20} />
-                                  <div>
-                                    <span>
-                                      {selected.status === 'on_hold'
-                                        ? 'CURRENT GAP'
-                                        : 'AFTER APPROVAL'}
-                                    </span>
-                                    <strong>{money(nextHold)}</strong>
-                                  </div>
-                                </div>
-                                {sum.pendingCreditCents > 0 && (
-                                  <div className="credit-pending">
-                                    <FileCheck2 size={15} />
-                                    <span>
-                                      {money(sum.pendingCreditCents)} supplier credit awaiting
-                                      approval
-                                    </span>
-                                  </div>
-                                )}
-                                <p>
-                                  {selected.status === 'queued'
-                                    ? 'The worker will apply this approved change and verify the resulting records.'
-                                    : selected.status === 'on_hold'
-                                      ? 'Follow up with the supplier. Record a credit or updated receipt when it arrives.'
-                                      : 'Review the exact change against the current sources. No ledger write happens before approval.'}
-                                </p>
-                                {selected.status === 'queued' ? (
-                                  <div className="processing-label">
-                                    <LoaderCircle size={16} className="spin" />
-                                    Waiting for verified execution
-                                  </div>
-                                ) : activeProposal ? (
-                                  <button
+                                  <a
                                     className="button primary full"
-                                    onClick={() => onReview(activeProposal)}
+                                    href={`/api/cases/${selected.id}/export?format=csv`}
+                                    download
                                   >
-                                    Review changes
-                                    <ArrowRight size={16} />
-                                  </button>
-                                ) : (
+                                    <ArrowDownToLine size={16} />
+                                    Export reconciliation
+                                  </a>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="decision-intro">
+                                    <h4>
+                                      {sum.pendingCreditCents > 0
+                                        ? 'Apply supplier credit'
+                                        : selected.status === 'queued'
+                                          ? 'Applying approved changes'
+                                          : selected.status === 'on_hold'
+                                            ? 'Hold recorded'
+                                            : activeProposal
+                                              ? 'Ready for review'
+                                              : 'Proposed ledger change'}
+                                    </h4>
+                                    <span className="decision-state">
+                                      {selected.status === 'queued'
+                                        ? 'IN PROGRESS'
+                                        : selected.status === 'on_hold'
+                                          ? 'VERIFIED'
+                                          : 'REVIEW REQUIRED'}
+                                    </span>
+                                  </div>
+                                  <div className="ledger-delta">
+                                    <div>
+                                      <span>HELD NOW</span>
+                                      <strong>{money(selected.heldCents)}</strong>
+                                    </div>
+                                    <ArrowRight size={20} />
+                                    <div>
+                                      <span>
+                                        {selected.status === 'on_hold'
+                                          ? 'CURRENT GAP'
+                                          : 'AFTER APPROVAL'}
+                                      </span>
+                                      <strong>{money(nextHold)}</strong>
+                                    </div>
+                                  </div>
+                                  {sum.pendingCreditCents > 0 && (
+                                    <div className="credit-pending">
+                                      <FileCheck2 size={15} />
+                                      <span>
+                                        {money(sum.pendingCreditCents)} supplier credit awaiting
+                                        approval
+                                      </span>
+                                    </div>
+                                  )}
+                                  <p>
+                                    {selected.status === 'queued'
+                                      ? 'The worker will apply this approved change and verify the resulting records.'
+                                      : selected.status === 'on_hold'
+                                        ? 'Follow up with the supplier. Record a credit or updated receipt when it arrives.'
+                                        : 'Review the exact change against the current sources. No ledger write happens before approval.'}
+                                  </p>
+                                  {selected.status === 'queued' ? (
+                                    <div className="processing-label">
+                                      <LoaderCircle size={16} className="spin" />
+                                      Waiting for verified execution
+                                    </div>
+                                  ) : activeProposal ? (
+                                    <button
+                                      className="button primary full"
+                                      onClick={() => onReview(activeProposal)}
+                                    >
+                                      Review changes
+                                      <ArrowRight size={16} />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      className="button primary full"
+                                      onClick={onPropose}
+                                      disabled={!!busy}
+                                    >
+                                      {busy === 'propose' ? (
+                                        <LoaderCircle size={16} className="spin" />
+                                      ) : (
+                                        <ListChecks size={16} />
+                                      )}
+                                      Prepare action plan
+                                    </button>
+                                  )}
                                   <button
-                                    className="button primary full"
-                                    onClick={onPropose}
+                                    className="button secondary full"
+                                    onClick={() => onModal('credit')}
                                     disabled={!!busy}
                                   >
-                                    {busy === 'propose' ? (
-                                      <LoaderCircle size={16} className="spin" />
-                                    ) : (
-                                      <ListChecks size={16} />
-                                    )}
-                                    Prepare action plan
+                                    <Plus size={16} />
+                                    Record supplier credit
                                   </button>
-                                )}
-                                <button
-                                  className="button secondary full"
-                                  onClick={() => onModal('credit')}
-                                  disabled={!!busy}
-                                >
-                                  <Plus size={16} />
-                                  Record supplier credit
+                                </>
+                              )}
+                              <div className="resolution-footnote">
+                                <ShieldCheck size={14} />
+                                <span>Approval binds to the source and ledger revisions.</span>
+                              </div>
+                            </div>
+                            {selected.proposals.length > 0 && (
+                              <div className="previous-proposals">
+                                <button onClick={onToggleOld}>
+                                  <History size={15} />
+                                  Previous proposals<span>{selected.proposals.length}</span>
+                                  <ChevronDown
+                                    size={15}
+                                    className={showOldProposals ? 'rotated' : ''}
+                                  />
                                 </button>
-                              </>
+                                {showOldProposals &&
+                                  [...selected.proposals].reverse().map((proposal) => (
+                                    <button
+                                      className="old-proposal"
+                                      key={proposal.id}
+                                      onClick={() => onReview({ ...proposal })}
+                                    >
+                                      <span>
+                                        Revision {proposal.sourceRevision}
+                                        <small>
+                                          {proposal.type === 'hold' ? 'Hold' : 'Reconcile'} ·{' '}
+                                          {proposal.status}
+                                        </small>
+                                      </span>
+                                      <strong>{money(proposal.amountCents)}</strong>
+                                      <ArrowUpRight size={14} />
+                                    </button>
+                                  ))}
+                              </div>
                             )}
-                            <div className="resolution-footnote">
-                              <ShieldCheck size={14} />
-                              <span>Approval binds to the source and ledger revisions.</span>
-                            </div>
-                          </div>
-                          {selected.proposals.length > 0 && (
-                            <div className="previous-proposals">
-                              <button onClick={onToggleOld}>
-                                <History size={15} />
-                                Previous proposals<span>{selected.proposals.length}</span>
-                                <ChevronDown
-                                  size={15}
-                                  className={showOldProposals ? 'rotated' : ''}
-                                />
-                              </button>
-                              {showOldProposals &&
-                                [...selected.proposals].reverse().map((proposal) => (
-                                  <button
-                                    className="old-proposal"
-                                    key={proposal.id}
-                                    onClick={() => onReview({ ...proposal })}
-                                  >
-                                    <span>
-                                      Revision {proposal.sourceRevision}
-                                      <small>
-                                        {proposal.type === 'hold' ? 'Hold' : 'Reconcile'} ·{' '}
-                                        {proposal.status}
-                                      </small>
-                                    </span>
-                                    <strong>{money(proposal.amountCents)}</strong>
-                                    <ArrowUpRight size={14} />
-                                  </button>
-                                ))}
-                            </div>
-                          )}
-                        </section>
-                      </div>
-                    </div>
-                    {selected.tasks.length > 0 && (
-                      <section className="tasks-panel">
-                        <div className="section-title compact">
-                          <div>
-                            <h3>Follow-up work</h3>
-                            <span className="count-badge">{selected.tasks.length}</span>
-                          </div>
-                          <button className="text-button" onClick={() => onModal('assign')}>
-                            <Users size={15} />
-                            Assign
-                          </button>
+                          </section>
                         </div>
-                        {selected.tasks.map((task) => (
-                          <div className="task-row" key={task.id}>
-                            <span className={`task-check ${task.status === 'done' ? 'done' : ''}`}>
-                              {task.status === 'done' ? <Check size={12} /> : null}
-                            </span>
+                      </div>
+                      {selected.tasks.length > 0 && (
+                        <section className="tasks-panel">
+                          <div className="section-title compact">
                             <div>
-                              <strong>{task.title}</strong>
-                              <span>{task.owner || 'Unassigned'}</span>
+                              <h3>Follow-up work</h3>
+                              <span className="count-badge">{selected.tasks.length}</span>
                             </div>
-                            <span className="subtle-label">
-                              {task.status === 'done' ? 'Complete' : 'Open'}
-                            </span>
+                            <button className="text-button" onClick={() => onModal('assign')}>
+                              <Users size={15} />
+                              Assign
+                            </button>
                           </div>
-                        ))}
-                      </section>
-                    )}
-                  </>
-                ) : (
-                  renderActivity(selected)
-                )}
+                          {selected.tasks.map((task) => (
+                            <div className="task-row" key={task.id}>
+                              <span
+                                className={`task-check ${task.status === 'done' ? 'done' : ''}`}
+                              >
+                                {task.status === 'done' ? <Check size={12} /> : null}
+                              </span>
+                              <div>
+                                <strong>{task.title}</strong>
+                                <span>{task.owner || 'Unassigned'}</span>
+                              </div>
+                              <span className="subtle-label">
+                                {task.status === 'done' ? 'Complete' : 'Open'}
+                              </span>
+                            </div>
+                          ))}
+                        </section>
+                      )}
+                    </>
+                  ) : (
+                    renderActivity(selected)
+                  )}
+                </div>
                 <div className="case-footer">
                   <span>
                     <LockKeyhole size={13} />

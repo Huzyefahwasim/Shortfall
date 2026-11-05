@@ -21,6 +21,11 @@ export async function sessionWorkspace(token: string | undefined): Promise<strin
   );
   return result.rows[0]?.workspace_id ?? null;
 }
+export async function endSession(token: string | undefined): Promise<void> {
+  if (!token || !/^[a-f0-9]{64}$/.test(token)) return;
+  // End this bearer session only. Cases, queued work, and spend accounting persist.
+  await query('DELETE FROM sessions WHERE token_hash=$1', [sessionHash(token)]);
+}
 async function insertCase(client: PoolClient, workspaceId: string, c: CaseRecord): Promise<void> {
   await client.query(
     'INSERT INTO cases(id,workspace_id,supplier_key,po_key,data) VALUES($1,$2,$3,$4,$5)',

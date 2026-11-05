@@ -84,6 +84,7 @@ let currentStage = 'Preflight';
 let failure;
 let currentSubtitle = '';
 let recordingComplete = false;
+let sessionStarts = 0;
 
 const offset = () => (performance.now() - videoEpoch) / 1000;
 function log(message) {
@@ -174,10 +175,46 @@ async function narrate(segmentNumber, cueIndex, action = async () => {}) {
 }
 async function frame(locator) {
   await expect(locator).toBeVisible();
-  await locator.evaluate((element) =>
-    element.scrollIntoView({ block: 'center', behavior: 'smooth' }),
-  );
+  await locator.evaluate((element) => {
+    const scroll = element.closest('.case-scroll');
+    if (scroll && scroll !== element) {
+      const bounds = element.getBoundingClientRect();
+      const container = scroll.getBoundingClientRect();
+      const padding = Math.max(
+        0,
+        (scroll.clientHeight - Math.min(bounds.height, scroll.clientHeight)) / 2,
+      );
+      scroll.scrollTo({
+        top: Math.max(0, scroll.scrollTop + bounds.top - container.top - padding),
+        behavior: 'smooth',
+      });
+    } else element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  });
   await pause(350);
+  await expect(locator).toBeInViewport();
+}
+async function inspectStartedWorkspace() {
+  const response = await context.request.get('/api/workspace');
+  assert.equal(response.status(), 200);
+  const workspace = await response.json();
+  assert(
+    workspace.service.workerOnline && workspace.service.inferenceEnabled,
+    'The live worker and extraction service must be online.',
+  );
+  const selected = workspace.cases.find(
+    (record) => record.poNumber === 'PO-1042' && record.invoiceNumber === 'INV-8821',
+  );
+  assert(selected?.synthetic, 'The expected synthetic Northstar case was not found.');
+  assert.equal(selected.proposals.length, 0, 'Recording requires a fresh ordinary workspace.');
+  assert.equal(selected.heldCents, 0);
+  assert.equal(
+    selected.receipts.reduce((sum, receipt) => sum + receipt.quantity, 0),
+    100,
+  );
+  caseId = selected.id;
+  log(
+    'SESSION started by the visible Create your own case choice; seeded case and live worker verified.',
+  );
 }
 async function readCase() {
   const response = await context.request.get(`/api/cases/${caseId}`);
@@ -292,6 +329,9 @@ async function evidenceField(label) {
   await button.click();
   await expect(page.locator('.document-paper mark')).toBeVisible();
   await frame(page.locator('.evidence-panel'));
+  // The application scrolls its source <pre> to the selected quote; verify that
+  // nested clipping has not left the highlight outside the visible source panel.
+  await expect(page.locator('.document-paper pre mark')).toBeInViewport();
 }
 async function navigateDocument(url, locatorFactory) {
   const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 });
@@ -360,6 +400,10 @@ try {
   page.on('pageerror', (error) => {
     if (page.url().startsWith(baseURL)) runtimeErrors.push(error.message);
   });
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/session')
+      sessionStarts++;
+  });
   log(
     'Video epoch: immediately after newPage. Native browser video is retained at its original timing.',
   );
@@ -367,24 +411,16 @@ try {
   await expect(page.getByRole('button', { name: /^Explore a sample case/ })).toBeVisible({
     timeout: 60_000,
   });
-  const response = await context.request.get('/api/workspace');
-  assert.equal(response.status(), 200);
-  const workspace = await response.json();
-  assert(
-    workspace.service.workerOnline && workspace.service.inferenceEnabled,
-    'The live worker and extraction service must be online.',
-  );
-  const selected = workspace.cases.find(
-    (record) => record.poNumber === 'PO-1042' && record.invoiceNumber === 'INV-8821',
-  );
-  assert(selected?.synthetic, 'The expected synthetic Northstar case was not found.');
-  assert.equal(selected.proposals.length, 0, 'Recording requires a fresh ordinary workspace.');
-  assert.equal(selected.heldCents, 0);
+  const anonymous = await context.request.get('/api/workspace');
   assert.equal(
-    selected.receipts.reduce((sum, receipt) => sum + receipt.quantity, 0),
-    100,
+    anonymous.status(),
+    401,
+    'The entry page must remain anonymous until a choice starts the session.',
   );
-  caseId = selected.id;
+  assert.equal(sessionStarts, 0, 'Loading the entry page cannot create a workspace.');
+  const health = await context.request.get('/api/health');
+  assert.equal(health.status(), 200, 'The deployed database is unavailable.');
+  assert.equal((await health.json()).workerOnline, true, 'The workflow worker is offline.');
   readyAt = offset();
   log(
     `READY application; lead-in=${readyAt.toFixed(3)}s. No routes or business results are mocked.`,
@@ -393,9 +429,20 @@ try {
   for (let cue = 0; cue < 5; cue++) await narrate(1, cue);
   await narrate(2, 0);
   await narrate(2, 1, async () => {
-    await page.getByRole('button', { name: /^Create your own case/ }).click();
+    assert.equal(sessionStarts, 0, 'A session was created before the visible entry choice.');
+    const [started] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.request().method() === 'POST' &&
+          new URL(response.url()).pathname === '/api/session',
+      ),
+      page.getByRole('button', { name: /^Create your own case/ }).click(),
+    ]);
+    assert.equal(started.status(), 200, 'The explicit session start failed.');
     await expect(page.locator('dialog[open]')).toBeVisible();
     await expect(page.locator('dialog[open] input[name="supplier"]')).toBeVisible();
+    await inspectStartedWorkspace();
+    assert.equal(sessionStarts, 1);
     if (currentSubtitle) await subtitle(currentSubtitle);
   });
   await narrate(2, 2, async () => {
@@ -403,7 +450,7 @@ try {
   });
   await narrate(2, 3, async () => {
     await page.locator('dialog[open]').getByRole('button', { name: 'Cancel', exact: true }).click();
-    await page.getByRole('button', { name: 'Guide', exact: true }).click();
+    await page.getByRole('button', { name: 'Home', exact: true }).click();
     await expect(page.getByRole('button', { name: /^Explore a sample case/ })).toBeVisible();
   });
   await narrate(2, 4, async () => {
@@ -412,6 +459,11 @@ try {
       page.getByRole('heading', { name: /^(?:Invoice operations|The exception desk)$/ }),
     ).toBeVisible();
     await page.getByRole('button', { name: /Northstar Components/ }).click();
+    assert.equal(
+      sessionStarts,
+      1,
+      'Returning Home and exploring the sample must keep the existing session.',
+    );
     await frame(page.locator('.discrepancy-banner'));
   });
   await narrate(3, 0, async () => {

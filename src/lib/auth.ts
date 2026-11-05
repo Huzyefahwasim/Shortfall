@@ -39,13 +39,24 @@ export function setSessionCookie(
   token: string,
   request: NextRequest,
 ): void {
-  const secure = (process.env.APP_ORIGIN || request.url).startsWith('https:');
   response.cookies.set(SESSION_COOKIE, token, {
-    httpOnly: true,
-    secure,
-    sameSite: 'lax',
-    path: '/',
+    ...sessionCookieOptions(request),
     maxAge: 7 * 24 * 60 * 60,
+  });
+}
+function sessionCookieOptions(request: NextRequest) {
+  return {
+    httpOnly: true,
+    secure: (process.env.APP_ORIGIN || request.url).startsWith('https:'),
+    sameSite: 'lax' as const,
+    path: '/',
+  };
+}
+export function clearSessionCookie(response: NextResponse, request: NextRequest): void {
+  response.cookies.set(SESSION_COOKIE, '', {
+    ...sessionCookieOptions(request),
+    maxAge: 0,
+    expires: new Date(0),
   });
 }
 export function errorResponse(error: unknown): NextResponse {

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
+import { NextRequest } from 'next/server';
 import { closePool, migrate, query, transaction } from '../src/lib/db';
 import {
   BudgetLedger,
@@ -22,6 +23,8 @@ import {
   sessionWorkspace,
 } from '../src/lib/service';
 import { DomainError } from '../src/lib/domain';
+import { DELETE as endSessionRequest } from '../src/app/api/session/route';
+import { GET as readWorkspaceRequest } from '../src/app/api/workspace/route';
 
 test(
   'database transactions preserve ownership, idempotency and source/execution serialization',
@@ -257,6 +260,93 @@ test(
           Number(workspaceTotal.rows[0].used),
           WORKSPACE_LIMIT_MICROUSD,
           'workspace reservation races cannot exceed $1',
+        );
+
+        const ending = await establishSession();
+        const endingCase = (await getWorkspace(ending.workspaceId)).cases[0];
+        const proposed = await caseAction(ending.workspaceId, endingCase.id, 'propose');
+        await caseAction(ending.workspaceId, endingCase.id, 'approve', {
+          proposalId: proposed.proposals.at(-1)!.id,
+        });
+        const spendId = randomUUID();
+        await query(
+          `INSERT INTO inference_reservations(id,workspace_id,attempt_key,amount_microusd,actual_microusd,status)
+          VALUES($1,$2,$3,90000,13700,'settled')`,
+          [spendId, ending.workspaceId, `end-session-spend-${spendId}`],
+        );
+        const savedCases = (await getWorkspace(ending.workspaceId)).cases;
+        const otherCases = (await getWorkspace(a.workspaceId)).cases;
+        const savedSpend = (
+          await query('SELECT * FROM inference_reservations WHERE id=$1', [spendId])
+        ).rows[0];
+        const workspaceCount = (await query('SELECT count(*)::text AS count FROM workspaces'))
+          .rows[0].count;
+        const origin = new URL(process.env.APP_ORIGIN || 'http://localhost:3000').origin;
+        const endRequest = () =>
+          new NextRequest(`${origin}/api/session`, {
+            method: 'DELETE',
+            headers: { origin, cookie: `shortfall_session=${ending.token}` },
+          });
+        assert.equal(await sessionWorkspace(ending.token), ending.workspaceId);
+        const refusedEnd = await endSessionRequest(
+          new NextRequest(`${origin}/api/session`, {
+            method: 'DELETE',
+            headers: {
+              origin: 'https://foreign.example',
+              cookie: `shortfall_session=${ending.token}`,
+            },
+          }),
+        );
+        assert.equal(refusedEnd.status, 403);
+        assert.equal(
+          await sessionWorkspace(ending.token),
+          ending.workspaceId,
+          'foreign origins cannot revoke a live session',
+        );
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const ended = await endSessionRequest(endRequest());
+          assert.equal(ended.status, 200);
+          assert.deepEqual(await ended.json(), { ended: true });
+          assert.equal(ended.cookies.get('shortfall_session')?.maxAge, 0);
+        }
+        assert.equal(
+          await sessionWorkspace(ending.token),
+          null,
+          'revoked bearer cannot recover access',
+        );
+        const deniedRead = await readWorkspaceRequest(
+          new NextRequest(`${origin}/api/workspace`, {
+            headers: { cookie: `shortfall_session=${ending.token}` },
+          }),
+        );
+        assert.equal(deniedRead.status, 401);
+        assert.equal((await deniedRead.json()).code, 'SESSION_REQUIRED');
+        assert.equal(
+          await sessionWorkspace(a.token),
+          a.workspaceId,
+          'ending one session cannot revoke another workspace',
+        );
+        assert.deepEqual((await getWorkspace(a.workspaceId)).cases, otherCases);
+        assert.deepEqual(
+          (await getWorkspace(ending.workspaceId)).cases,
+          savedCases,
+          'ending access preserves source, approval and ledger records',
+        );
+        assert.deepEqual(
+          (await query('SELECT * FROM inference_reservations WHERE id=$1', [spendId])).rows[0],
+          savedSpend,
+          'ending access cannot reset settled model spend',
+        );
+        assert.equal(
+          (await query('SELECT count(*)::text AS count FROM workspaces')).rows[0].count,
+          workspaceCount,
+          'ending access cannot create a replacement workspace',
+        );
+        assert.equal(
+          (await query('SELECT status FROM jobs WHERE workspace_id=$1', [ending.workspaceId]))
+            .rows[0].status,
+          'queued',
+          'approved work persists after session access ends',
         );
 
         await query("UPDATE workspaces SET expires_at=now()-interval '1 second' WHERE id=$1", [

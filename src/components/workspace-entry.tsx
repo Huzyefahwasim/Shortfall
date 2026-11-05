@@ -1,15 +1,22 @@
 'use client';
 
-import { ArrowRight, Check, FileText, LockKeyhole, Plus, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Check, FileText, LockKeyhole, LogOut, Plus, ShieldCheck } from 'lucide-react';
 
 interface EntryProps {
   canContinue: boolean;
   onExplore: () => void;
   onCreate: () => void;
   onContinue: () => void;
+  onEndSession?: () => void;
 }
 
-export function WorkspaceEntry({ canContinue, onExplore, onCreate, onContinue }: EntryProps) {
+export function WorkspaceEntry({
+  canContinue,
+  onExplore,
+  onCreate,
+  onContinue,
+  onEndSession,
+}: EntryProps) {
   return (
     <div className="entry-screen">
       <header className="appbar entry-appbar">
@@ -28,6 +35,12 @@ export function WorkspaceEntry({ canContinue, onExplore, onCreate, onContinue }:
           <button className="button secondary" onClick={onContinue}>
             Return to workspace
             <ArrowRight size={15} />
+          </button>
+        )}
+        {canContinue && onEndSession && (
+          <button className="session-control" onClick={onEndSession}>
+            <LogOut size={15} />
+            End session
           </button>
         )}
       </header>

@@ -1,12 +1,14 @@
 # Judge quickstart
 
-Open [Shortfall](https://shortfall.95.179.254.189.sslip.io) in a fresh private/incognito window. You do not need an account, API key, environment file, or local installation. The browser receives a private anonymous demo workspace with a seven-day session. Keeping the same browser session preserves access; a separate private session gets a separate workspace.
+Open [Shortfall](https://shortfall.95.179.254.189.sslip.io) in a fresh private/incognito window. You do not need an account, API key, environment file, or local installation. Choose **Explore a sample case** or **Create your own case** to start a private anonymous workspace with a seven-day session. Opening the entry page alone does not create a session. Keeping the same browser session preserves access; a separate private session can start a separate workspace.
+
+The Home/End session behavior below passed local verification on 5 November. Its public deployment is pending.
 
 Use synthetic records. The application records real changes in its internal demonstration ledger; it does not send payments or update an ERP.
 
 ## Explore the sample
 
-Choose **Explore a sample case** at the entry screen. The **Guide** control reopens the walkthrough.
+Choose **Explore a sample case** at the entry screen. **Home** returns to entry while preserving the current workspace; **Return to workspace** resumes it.
 
 1. Open Northstar Components, invoice INV-8821 and purchase order PO-1042. The invoice has 120 units at $40; the initial accepted quantity is 100. Confirm the $800 discrepancy.
 2. Select **Prepare resolution**. Inspect the $800 proposal, then close review without approving.
@@ -43,6 +45,12 @@ Manual entry creates labeled synthetic source records. To test extraction, attac
 
 Owner/reviewer fields support assignment. They are labels in this anonymous demo, not separately authenticated employee roles.
 
+## Navigate and end a session
+
+Home, Exceptions, and Activity use `#home`, `#exceptions`, and `#activity`. Browser Back and Forward move between these views without replacing the selected case or session. Case history has its own **Activity** tab. Long records and lists scroll inside their panels, keeping the page and primary actions usable.
+
+To leave the anonymous workspace, choose **End session** and confirm **End session** in the dialog. **Keep working** cancels. Export anything needed first: ending a session revokes its server token, expires its browser cookie, and removes browser access to that workspace. There is no account-based recovery. Approved queued work, stored records, and spending accounting remain. Reload stays on Home; a new session starts only when you explicitly choose Explore or Create again.
+
 ## Useful checks
 
 - Open a second private browser session. Its cases and reset are separate.
@@ -50,6 +58,8 @@ Owner/reviewer fields support assignment. They are labels in this anonymous demo
 - Inspect an applied execution and use **Check retry**. The command keeps its prior result.
 - Supply conflicting identifiers or an unsupported source. The case stays in review.
 - Reset affects the current workspace's cases; it does not reset model-spend accounting.
+
+The navigation/layout regression checks passed locally at 1280 × 560, 1366 × 650, 1440 × 760, and 390 × 700. They verify bounded page layout, internal scrolling, reachable dialog actions, keyboard access, history, and session ending. These new regression checks are separate from the earlier public workflow tests.
 
 If the file itself needs correction, upload a corrected file using the same document type and reference. This supersedes the current source while preserving its history. **Retry extraction** processes the same source again; it does not repair missing fields. A pending or unverified current document blocks a new proposal.
 

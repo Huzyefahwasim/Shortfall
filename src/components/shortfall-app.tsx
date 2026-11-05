@@ -51,7 +51,13 @@ import type {
 } from '@/lib/types';
 
 type View = 'desk' | 'activity';
-type ModalName = 'receipt' | 'credit' | 'create' | 'upload' | 'assign' | 'policy' | 'reset' | null;
+type ModalName =
+  'receipt' | 'credit' | 'create' | 'upload' | 'assign' | 'policy' | 'reset' | 'end_session' | null;
+type Screen = 'home' | 'exceptions' | 'activity';
+function locationScreen(): Screen | null {
+  const screen = window.location.hash.slice(1);
+  return screen === 'home' || screen === 'exceptions' || screen === 'activity' ? screen : null;
+}
 type Notice = { kind: 'success' | 'error' | 'info'; message: string } | null;
 const money = (cents: number) =>
   new Intl.NumberFormat('en-US', {
@@ -149,17 +155,14 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
   return payload as T;
 }
 
-function Brand({ compact = false }: { compact?: boolean }) {
+function Brand() {
   return (
-    <div className={`brand ${compact ? 'brand-compact' : ''}`}>
-      <span className="brand-mark" aria-hidden="true">
-        <span />
+    <div className="wordmark">
+      <span className="wordmark-symbol" aria-hidden="true">
         <span />
         <span />
       </span>
-      <span>
-        shortfall<span className="brand-period">.</span>
-      </span>
+      Shortfall<span className="product-area">Payables</span>
     </div>
   );
 }
@@ -215,7 +218,7 @@ function Dialog({
           <X size={20} />
         </button>
       </div>
-      {children}
+      <div className="dialog-body">{children}</div>
     </dialog>
   );
 }
@@ -232,6 +235,7 @@ function Field({ label, children, hint }: { label: string; children: ReactNode; 
 
 export function ShortfallApp() {
   const [workspace, setWorkspace] = useState<WorkspaceResponse | null>(null);
+  const workspaceRef = useRef<WorkspaceResponse | null>(null);
   const [selected, setSelected] = useState<CaseRecord | null>(null);
   const selectedId = useRef<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -253,9 +257,59 @@ export function ShortfallApp() {
   const [mobileCase, setMobileCase] = useState(false);
   const initialized = useRef(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [hasEntered, setHasEntered] = useState(false);
   const [guideVisible, setGuideVisible] = useState(false);
   const checkedWelcome = useRef<string | null>(null);
+
+  const navigate = useCallback((screen: Screen, replace = false) => {
+    const target = screen !== 'home' && !workspaceRef.current ? 'home' : screen;
+    setShowWelcome(target === 'home');
+    if (target !== 'home') setView(target === 'activity' ? 'activity' : 'desk');
+    setModal(null);
+    setReview(null);
+    setReviewError('');
+    setNotice(null);
+    if (window.location.hash !== '#' + target) {
+      const url = window.location.pathname + window.location.search + '#' + target;
+      if (replace) window.history.replaceState(null, '', url);
+      else window.history.pushState(null, '', url);
+    }
+  }, []);
+
+  const clearSession = useCallback(() => {
+    requestGeneration.current++;
+    workspaceRef.current = null;
+    selectedId.current = null;
+    checkedWelcome.current = null;
+    setWorkspace(null);
+    setSelected(null);
+    setDocumentId(null);
+    setEvidenceIndex(null);
+    setMobileCase(false);
+    setGuideVisible(false);
+    setSearch('');
+    setFilter('all');
+    setShowOldProposals(false);
+    navigate('home', true);
+  }, [navigate]);
+
+  useEffect(() => {
+    const restore = () => {
+      const screen = locationScreen();
+      // In-page anchors such as the keyboard skip link are not screen navigation.
+      if (screen || !window.location.hash) queueMicrotask(() => navigate(screen || 'home', true));
+    };
+    const endedElsewhere = (event: StorageEvent) => {
+      if (event.key === 'shortfall:session-ended' && event.newValue) clearSession();
+    };
+    window.addEventListener('popstate', restore);
+    window.addEventListener('hashchange', restore);
+    window.addEventListener('storage', endedElsewhere);
+    return () => {
+      window.removeEventListener('popstate', restore);
+      window.removeEventListener('hashchange', restore);
+      window.removeEventListener('storage', endedElsewhere);
+    };
+  }, [navigate, clearSession]);
 
   useEffect(() => {
     const id = workspace?.workspace.id;
@@ -267,31 +321,8 @@ export function ShortfallApp() {
     } catch {
       /* Storage may be disabled. */
     }
-    setHasEntered(seen);
-    setShowWelcome(!seen);
-  }, [workspace?.workspace.id]);
-
-  function enterWorkspace(mode: 'sample' | 'own') {
-    if (workspace) {
-      try {
-        localStorage.setItem('shortfall:entered:' + workspace.workspace.id, '1');
-      } catch {
-        /* The session still works without local storage. */
-      }
-    }
-    setHasEntered(true);
-    setShowWelcome(false);
-    setView('desk');
-    setNotice(null);
-    if (mode === 'sample') {
-      const sample = workspace?.cases.find((record) => record.poNumber === 'PO-1042');
-      if (sample) void selectCase(sample);
-      setGuideVisible(true);
-    } else {
-      setGuideVisible(false);
-      setModal('create');
-    }
-  }
+    navigate(locationScreen() || (seen ? 'exceptions' : 'home'), true);
+  }, [workspace?.workspace.id, navigate]);
 
   const replaceCase = useCallback((record: CaseRecord) => {
     if (selectedId.current === record.id) setSelected(record);
@@ -316,6 +347,7 @@ export function ShortfallApp() {
         Number(a.status === 'resolved') - Number(b.status === 'resolved') ||
         totals(b).discrepancyCents - totals(a).discrepancyCents,
     );
+    workspaceRef.current = data;
     setWorkspace(data);
     const id = selectedId.current;
     if (id && data.cases.some((c) => c.id === id)) {
@@ -329,20 +361,78 @@ export function ShortfallApp() {
       selectedId.current = null;
       setSelected(null);
     }
+    return data;
   }, []);
 
-  const initialize = useCallback(async () => {
-    setLoading(true);
-    setInitialError('');
+  const initialize = useCallback(
+    async (create = false) => {
+      setLoading(true);
+      setInitialError('');
+      try {
+        if (create) await api('/api/session', { method: 'POST', body: '{}' });
+        return await refresh();
+      } catch (error) {
+        if (error instanceof RequestError && error.status === 401) clearSession();
+        else
+          setInitialError(
+            error instanceof Error ? error.message : 'Could not open your workspace.',
+          );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [refresh, clearSession],
+  );
+
+  async function enterWorkspace(mode: 'sample' | 'own') {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    const data = workspaceRef.current || (await initialize(true));
+    busyRef.current = false;
+    if (!data) return;
+    checkedWelcome.current = data.workspace.id;
     try {
-      await api('/api/session', { method: 'POST', body: '{}' });
-      await refresh();
-    } catch (error) {
-      setInitialError(error instanceof Error ? error.message : 'Could not open your workspace.');
-    } finally {
-      setLoading(false);
+      localStorage.setItem('shortfall:entered:' + data.workspace.id, '1');
+    } catch {
+      /* The session still works without local storage. */
     }
-  }, [refresh]);
+    navigate('exceptions');
+    if (mode === 'sample') {
+      const sample = data.cases.find((record) => record.poNumber === 'PO-1042');
+      if (sample) void selectCase(sample);
+      setGuideVisible(true);
+    } else {
+      setGuideVisible(false);
+      setModal('create');
+    }
+  }
+
+  async function endSession() {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy('end_session');
+    requestGeneration.current++;
+    try {
+      await api('/api/session', { method: 'DELETE' });
+      try {
+        if (workspaceRef.current)
+          localStorage.removeItem('shortfall:entered:' + workspaceRef.current.workspace.id);
+        localStorage.setItem('shortfall:session-ended', String(Date.now()));
+      } catch {
+        /* Server revocation remains effective when storage is unavailable. */
+      }
+      clearSession();
+    } catch (error) {
+      setNotice({
+        kind: 'error',
+        message:
+          error instanceof Error ? error.message : 'Could not end the session. Please try again.',
+      });
+    } finally {
+      busyRef.current = false;
+      setBusy('');
+    }
+  }
 
   useEffect(() => {
     if (!initialized.current) {
@@ -600,14 +690,21 @@ export function ShortfallApp() {
     <div className="app-shell">
       {showWelcome ? (
         <WorkspaceEntry
-          canContinue={hasEntered}
-          onExplore={() => enterWorkspace('sample')}
-          onCreate={() => enterWorkspace('own')}
-          onContinue={() => setShowWelcome(false)}
+          canContinue={!!workspace}
+          onExplore={() => void enterWorkspace('sample')}
+          onCreate={() => void enterWorkspace('own')}
+          onContinue={() => navigate(view === 'activity' ? 'activity' : 'exceptions')}
+          onEndSession={workspace ? () => setModal('end_session') : undefined}
         />
       ) : (
         <OperationsConsole
-          onGuide={() => setShowWelcome(true)}
+          onGuide={() => navigate('home')}
+          onEndSession={() => {
+            if (!busyRef.current) {
+              setNotice(null);
+              setModal('end_session');
+            }
+          }}
           guideVisible={guideVisible}
           onHideGuide={() => setGuideVisible(false)}
           workspace={workspace}
@@ -616,7 +713,7 @@ export function ShortfallApp() {
           caseTotals={selectedTotals}
           totalDiscrepancy={totalDiscrepancy}
           view={view}
-          onView={setView}
+          onView={(next) => navigate(next === 'activity' ? 'activity' : 'exceptions')}
           search={search}
           onSearch={setSearch}
           filter={filter}
@@ -689,6 +786,7 @@ export function ShortfallApp() {
               assign: 'Assign the work',
               policy: 'Workspace policy',
               reset: 'Reset this workspace?',
+              end_session: 'End this session?',
             }[modal]
           }
           description={
@@ -701,6 +799,7 @@ export function ShortfallApp() {
               policy: 'The rules used to prepare and verify action plans.',
               reset:
                 'Replace your cases with the original sample records. This affects only your private workspace.',
+              end_session: 'End access to this private workspace on this browser.',
             }[modal]
           }
           onClose={() => {
@@ -716,43 +815,45 @@ export function ShortfallApp() {
           )}
           {modal === 'policy' ? (
             <div className="policy-content">
-              <div className="policy-intro">
-                <ShieldCheck size={24} />
-                <div>
-                  <strong>Quantity reconciliation</strong>
-                  <span>Explicit review before ledger changes</span>
+              <div className="dialog-scroll">
+                <div className="policy-intro">
+                  <ShieldCheck size={24} />
+                  <div>
+                    <strong>Quantity reconciliation</strong>
+                    <span>Explicit review before ledger changes</span>
+                  </div>
                 </div>
+                <dl>
+                  <div>
+                    <dt>Supported currency</dt>
+                    <dd>USD</dd>
+                  </div>
+                  <div>
+                    <dt>Quantity tolerance</dt>
+                    <dd>0 units</dd>
+                  </div>
+                  <div>
+                    <dt>Approval scope</dt>
+                    <dd>Current evidence + ledger revision</dd>
+                  </div>
+                  <div>
+                    <dt>Credit application</dt>
+                    <dd>Human approval required</dd>
+                  </div>
+                  <div>
+                    <dt>Purchase order allocation</dt>
+                    <dd>One invoice case per order</dd>
+                  </div>
+                  <div>
+                    <dt>Unsupported records</dt>
+                    <dd>Require review</dd>
+                  </div>
+                </dl>
+                <p className="form-note">
+                  This workspace uses synthetic records and an internal ledger. It does not send
+                  payments or supplier emails.
+                </p>
               </div>
-              <dl>
-                <div>
-                  <dt>Supported currency</dt>
-                  <dd>USD</dd>
-                </div>
-                <div>
-                  <dt>Quantity tolerance</dt>
-                  <dd>0 units</dd>
-                </div>
-                <div>
-                  <dt>Approval scope</dt>
-                  <dd>Current evidence + ledger revision</dd>
-                </div>
-                <div>
-                  <dt>Credit application</dt>
-                  <dd>Human approval required</dd>
-                </div>
-                <div>
-                  <dt>Purchase order allocation</dt>
-                  <dd>One invoice case per order</dd>
-                </div>
-                <div>
-                  <dt>Unsupported records</dt>
-                  <dd>Require review</dd>
-                </div>
-              </dl>
-              <p className="form-note">
-                This workspace uses synthetic records and an internal ledger. It does not send
-                payments or supplier emails.
-              </p>
               <div className="dialog-actions">
                 <button className="button primary" onClick={() => setModal(null)}>
                   Understood
@@ -761,10 +862,12 @@ export function ShortfallApp() {
             </div>
           ) : modal === 'reset' ? (
             <div className="reset-content">
-              <p>
-                New cases, uploaded evidence, approvals, and activity in this workspace will be
-                replaced. Download any reconciliation you want to keep first.
-              </p>
+              <div className="dialog-scroll">
+                <p>
+                  New cases, uploaded evidence, approvals, and activity in this workspace will be
+                  replaced. Download any reconciliation you want to keep first.
+                </p>
+              </div>
               <div className="dialog-actions">
                 <button
                   className="button secondary"
@@ -808,294 +911,347 @@ export function ShortfallApp() {
                 </button>
               </div>
             </div>
+          ) : modal === 'end_session' ? (
+            <div className="end-session-content">
+              <div className="dialog-scroll">
+                <p>
+                  This workspace has no account or password to sign back in with. Export any records
+                  you want to keep before ending the session.
+                </p>
+                <p>
+                  Ending the session removes this browser’s access. It does not delete records or
+                  cancel approved work already queued. Starting again opens a new workspace.
+                </p>
+                <p>
+                  To go back and keep your work, close this dialog and choose <strong>Home</strong>.
+                </p>
+                {selected && (
+                  <a
+                    className="button secondary"
+                    href={`/api/cases/${selected.id}/export`}
+                    download
+                  >
+                    Export current case
+                  </a>
+                )}
+              </div>
+              <div className="dialog-actions">
+                <button
+                  className="button secondary"
+                  disabled={!!busy}
+                  onClick={() => setModal(null)}
+                >
+                  Keep working
+                </button>
+                <button
+                  className="button danger"
+                  disabled={!!busy}
+                  onClick={() => void endSession()}
+                >
+                  {busy === 'end_session' && <LoaderCircle size={15} className="spin" />}
+                  End session
+                </button>
+              </div>
+            </div>
           ) : (
             <form onSubmit={submitForm} className="dialog-form">
-              {modal === 'receipt' && (
-                <>
-                  <div className="form-context">
-                    <PackageCheck size={17} />
-                    <span>{selected?.poNumber}</span>
-                    <strong>
-                      {selectedTotals?.receivedUnits} / {selected?.orderedUnits} units accepted
-                    </strong>
-                  </div>
-                  <Field label="Accepted quantity">
-                    <input
-                      name="quantity"
-                      type="number"
-                      min="1"
-                      step="1"
-                      required
-                      autoFocus
-                      placeholder="e.g. 10"
-                    />
-                  </Field>
-                  <Field label="Receipt reference">
-                    <input name="reference" required maxLength={100} placeholder="e.g. GR-1042" />
-                  </Field>
-                  <p className="form-note">
-                    Enter the newly accepted quantity, not the cumulative total. This form records a
-                    manual entry.
-                  </p>
-                  {selected?.poNumber === 'PO-1042' && (
-                    <button
-                      type="button"
-                      className="sample-fill"
-                      onClick={(event) => {
-                        const form = event.currentTarget.form;
-                        const quantity = form?.elements.namedItem('quantity') as HTMLInputElement;
-                        const reference = form?.elements.namedItem('reference') as HTMLInputElement;
-                        if (quantity && reference) {
-                          quantity.value = '10';
-                          reference.value = 'RCV-2042';
-                        }
-                      }}
-                    >
-                      <PackageCheck size={14} />
-                      Fill sample: 10 late units<span>Review before recording</span>
-                    </button>
-                  )}
-                </>
-              )}
-              {modal === 'credit' && (
-                <>
-                  <div className="form-context">
-                    <FileCheck2 size={17} />
-                    <span>{selected?.invoiceNumber}</span>
-                    <strong>{money(selectedTotals?.discrepancyCents || 0)} discrepancy</strong>
-                  </div>
-                  <Field label="Credit amount (USD)">
-                    <input
-                      name="amount"
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      required
-                      autoFocus
-                      placeholder="e.g. 400.00"
-                    />
-                  </Field>
-                  <Field label="Supplier credit reference">
-                    <input name="reference" required maxLength={100} placeholder="e.g. CN-2041" />
-                  </Field>
-                  <p className="form-note">
-                    This records an existing supplier credit in the sample ledger. It does not issue
-                    a credit on the supplier’s behalf.
-                  </p>
-                </>
-              )}
-              {modal === 'assign' && (
-                <>
-                  <Field label="Case owner">
-                    <input
-                      name="owner"
-                      defaultValue={selected?.owner || ''}
-                      required
-                      maxLength={80}
-                      autoFocus
-                      placeholder="Finance owner"
-                    />
-                  </Field>
-                  <Field label="Reviewer">
-                    <input
-                      name="reviewer"
-                      defaultValue={selected?.reviewer || ''}
-                      required
-                      maxLength={80}
-                      placeholder="Approval reviewer"
-                    />
-                  </Field>
-                  <p className="form-note">
-                    Assignments are internal workflow labels in this sample workspace.
-                  </p>
-                </>
-              )}
-              {modal === 'upload' && (
-                <>
-                  <div className="upload-case-context">
-                    <span>DOCUMENTS MUST MATCH THIS CASE</span>
-                    <strong>{selected?.supplier}</strong>
-                    <p>
-                      {selected?.poNumber} · {selected?.invoiceNumber} · Item {selected?.sku} · USD
+              <div className="dialog-scroll">
+                {modal === 'receipt' && (
+                  <>
+                    <div className="form-context">
+                      <PackageCheck size={17} />
+                      <span>{selected?.poNumber}</span>
+                      <strong>
+                        {selectedTotals?.receivedUnits} / {selected?.orderedUnits} units accepted
+                      </strong>
+                    </div>
+                    <Field label="Accepted quantity">
+                      <input
+                        name="quantity"
+                        type="number"
+                        min="1"
+                        step="1"
+                        required
+                        autoFocus
+                        placeholder="e.g. 10"
+                      />
+                    </Field>
+                    <Field label="Receipt reference">
+                      <input name="reference" required maxLength={100} placeholder="e.g. GR-1042" />
+                    </Field>
+                    <p className="form-note">
+                      Enter the newly accepted quantity, not the cumulative total. This form records
+                      a manual entry.
                     </p>
-                    <p>
-                      Include these identifiers in the source. Enter the reference exactly as
-                      printed on the document.
-                    </p>
-                  </div>
-                  <Field label="Document type">
-                    <select name="kind" defaultValue="receipt">
-                      <option value="receipt">Goods receipt</option>
-                      <option value="invoice">Supplier invoice</option>
-                      <option value="purchase_order">Purchase order</option>
-                      <option value="credit">Supplier credit</option>
-                    </select>
-                  </Field>
-                  <Field label="Document reference">
-                    <input
-                      name="reference"
-                      required
-                      maxLength={100}
-                      placeholder="Reference printed on the document"
-                    />
-                  </Field>
-                  <Field
-                    label="File"
-                    hint="PDF with text, TXT, CSV, or JSON. Up to 5 MB and 8 PDF pages. Scanned PDFs need manual review."
-                  >
-                    <input
-                      name="file"
-                      type="file"
-                      accept=".pdf,.txt,.json,.csv,text/plain,application/pdf,application/json,text/csv"
-                      required
-                    />
-                  </Field>
-                  {selected?.poNumber === 'PO-1042' &&
-                  selected?.supplier.toLowerCase().includes('northstar') ? (
-                    <div className="sample-downloads">
-                      <span>SYNTHETIC NORTHSTAR DOCUMENTS</span>
-                      <a
-                        href="/samples/receipt-late.txt"
-                        download
+                    {selected?.poNumber === 'PO-1042' && (
+                      <button
+                        type="button"
+                        className="sample-fill"
                         onClick={(event) => {
-                          const form = event.currentTarget.closest('form');
-                          const kind = form?.elements.namedItem('kind') as HTMLSelectElement;
+                          const form = event.currentTarget.form;
+                          const quantity = form?.elements.namedItem('quantity') as HTMLInputElement;
                           const reference = form?.elements.namedItem(
                             'reference',
                           ) as HTMLInputElement;
-                          if (kind && reference) {
-                            kind.value = 'receipt';
+                          if (quantity && reference) {
+                            quantity.value = '10';
                             reference.value = 'RCV-2042';
                           }
                         }}
                       >
-                        <ArrowDownToLine size={13} />
-                        Late receipt · RCV-2042
-                      </a>
-                      <a
-                        href="/samples/credit-note.txt"
-                        download
-                        onClick={(event) => {
-                          const form = event.currentTarget.closest('form');
-                          const kind = form?.elements.namedItem('kind') as HTMLSelectElement;
-                          const reference = form?.elements.namedItem(
-                            'reference',
-                          ) as HTMLInputElement;
-                          if (kind && reference) {
-                            kind.value = 'credit';
-                            reference.value = 'CN-8821-01';
-                          }
-                        }}
-                      >
-                        <ArrowDownToLine size={13} />
-                        Supplier credit · CN-8821-01
-                      </a>
-                      <p>
-                        These files match Northstar, PO-1042. Download the late receipt first; the
-                        link fills its type and reference. Select the downloaded file above, then
-                        upload it to run extraction. After the discrepancy reaches $400, repeat with
-                        the supplier credit.
-                      </p>
+                        <PackageCheck size={14} />
+                        Fill sample: 10 late units<span>Review before recording</span>
+                      </button>
+                    )}
+                  </>
+                )}
+                {modal === 'credit' && (
+                  <>
+                    <div className="form-context">
+                      <FileCheck2 size={17} />
+                      <span>{selected?.invoiceNumber}</span>
+                      <strong>{money(selectedTotals?.discrepancyCents || 0)} discrepancy</strong>
                     </div>
-                  ) : (
-                    <details className="source-template">
-                      <summary>Required source fields</summary>
-                      <p>
-                        Use your own TXT, CSV, JSON, or text PDF. Northstar sample downloads belong
-                        to the sample case and will not match this case.
-                      </p>
-                      <pre>{`Document type: Goods receipt (or invoice, purchase order, supplier credit)\nSupplier: ${selected?.supplier}\nPurchase order: ${selected?.poNumber}\nInvoice: ${selected?.invoiceNumber}\nItem: ${selected?.sku}\nCurrency: USD\nReference: [the document's unique reference]\nAccepted quantity: [newly received whole units, for a receipt]\nCredit amount: [USD amount, for a supplier credit]`}</pre>
-                      <p>
-                        For an invoice or purchase order, include the whole-unit quantity, unit
-                        price, and total. Replace the bracketed fields with the actual values for
-                        your document.
-                      </p>
-                    </details>
-                  )}
-                  {!workspace?.service.inferenceEnabled && (
-                    <p className="form-note warning-text">
-                      Document extraction is not configured. You can use manual receipt and credit
-                      entry instead.
-                    </p>
-                  )}
-                </>
-              )}
-              {modal === 'create' && (
-                <>
-                  <div className="form-grid">
-                    <Field label="Supplier">
+                    <Field label="Credit amount (USD)">
                       <input
-                        name="supplier"
-                        required
-                        autoFocus
-                        maxLength={160}
-                        placeholder="Supplier name"
-                      />
-                    </Field>
-                    <Field label="Item description">
-                      <input
-                        name="description"
-                        required
-                        maxLength={200}
-                        placeholder="e.g. Steel mounting brackets"
-                      />
-                    </Field>
-                    <Field label="Purchase order reference">
-                      <input name="poNumber" required maxLength={100} placeholder="PO-1042" />
-                    </Field>
-                    <Field label="Invoice reference">
-                      <input name="invoiceNumber" required maxLength={100} placeholder="INV-2041" />
-                    </Field>
-                    <Field label="Exact SKU">
-                      <input name="sku" required maxLength={100} placeholder="BRK-040" />
-                    </Field>
-                    <Field label="Unit price (USD)">
-                      <input
-                        name="unitPrice"
+                        name="amount"
                         type="number"
                         min="0.01"
                         step="0.01"
                         required
-                        placeholder="40.00"
+                        autoFocus
+                        placeholder="e.g. 400.00"
                       />
                     </Field>
-                    <Field label="Ordered units">
+                    <Field label="Supplier credit reference">
+                      <input name="reference" required maxLength={100} placeholder="e.g. CN-2041" />
+                    </Field>
+                    <p className="form-note">
+                      This records an existing supplier credit in the sample ledger. It does not
+                      issue a credit on the supplier’s behalf.
+                    </p>
+                  </>
+                )}
+                {modal === 'assign' && (
+                  <>
+                    <Field label="Case owner">
                       <input
-                        name="orderedUnits"
-                        type="number"
-                        min="1"
-                        step="1"
+                        name="owner"
+                        defaultValue={selected?.owner || ''}
                         required
-                        placeholder="120"
+                        maxLength={80}
+                        autoFocus
+                        placeholder="Finance owner"
                       />
                     </Field>
-                    <Field label="Invoiced units">
+                    <Field label="Reviewer">
                       <input
-                        name="invoicedUnits"
-                        type="number"
-                        min="1"
-                        step="1"
+                        name="reviewer"
+                        defaultValue={selected?.reviewer || ''}
                         required
-                        placeholder="120"
+                        maxLength={80}
+                        placeholder="Approval reviewer"
                       />
                     </Field>
-                    <Field label="Accepted units so far">
+                    <p className="form-note">
+                      Assignments are internal workflow labels in this sample workspace.
+                    </p>
+                  </>
+                )}
+                {modal === 'upload' && (
+                  <>
+                    <div className="upload-case-context">
+                      <span>DOCUMENTS MUST MATCH THIS CASE</span>
+                      <strong>{selected?.supplier}</strong>
+                      <p>
+                        {selected?.poNumber} · {selected?.invoiceNumber} · Item {selected?.sku} ·
+                        USD
+                      </p>
+                      <p>
+                        Include these identifiers in the source. Enter the reference exactly as
+                        printed on the document.
+                      </p>
+                    </div>
+                    <Field label="Document type">
+                      <select name="kind" defaultValue="receipt">
+                        <option value="receipt">Goods receipt</option>
+                        <option value="invoice">Supplier invoice</option>
+                        <option value="purchase_order">Purchase order</option>
+                        <option value="credit">Supplier credit</option>
+                      </select>
+                    </Field>
+                    <Field label="Document reference">
                       <input
-                        name="receivedUnits"
-                        type="number"
-                        min="0"
-                        step="1"
+                        name="reference"
                         required
-                        defaultValue="0"
+                        maxLength={100}
+                        placeholder="Reference printed on the document"
                       />
                     </Field>
-                  </div>
-                  <p className="form-note">
-                    One invoice per purchase order. Split invoicing, taxes, discounts, and foreign
-                    exchange are outside this workspace’s policy. New records are labeled synthetic.
-                  </p>
-                </>
-              )}
+                    <Field
+                      label="File"
+                      hint="PDF with text, TXT, CSV, or JSON. Up to 5 MB and 8 PDF pages. Scanned PDFs need manual review."
+                    >
+                      <input
+                        name="file"
+                        type="file"
+                        accept=".pdf,.txt,.json,.csv,text/plain,application/pdf,application/json,text/csv"
+                        required
+                      />
+                    </Field>
+                    {selected?.poNumber === 'PO-1042' &&
+                    selected?.supplier.toLowerCase().includes('northstar') ? (
+                      <div className="sample-downloads">
+                        <span>SYNTHETIC NORTHSTAR DOCUMENTS</span>
+                        <a
+                          href="/samples/receipt-late.txt"
+                          download
+                          onClick={(event) => {
+                            const form = event.currentTarget.closest('form');
+                            const kind = form?.elements.namedItem('kind') as HTMLSelectElement;
+                            const reference = form?.elements.namedItem(
+                              'reference',
+                            ) as HTMLInputElement;
+                            if (kind && reference) {
+                              kind.value = 'receipt';
+                              reference.value = 'RCV-2042';
+                            }
+                          }}
+                        >
+                          <ArrowDownToLine size={13} />
+                          Late receipt · RCV-2042
+                        </a>
+                        <a
+                          href="/samples/credit-note.txt"
+                          download
+                          onClick={(event) => {
+                            const form = event.currentTarget.closest('form');
+                            const kind = form?.elements.namedItem('kind') as HTMLSelectElement;
+                            const reference = form?.elements.namedItem(
+                              'reference',
+                            ) as HTMLInputElement;
+                            if (kind && reference) {
+                              kind.value = 'credit';
+                              reference.value = 'CN-8821-01';
+                            }
+                          }}
+                        >
+                          <ArrowDownToLine size={13} />
+                          Supplier credit · CN-8821-01
+                        </a>
+                        <p>
+                          These files match Northstar, PO-1042. Download the late receipt first; the
+                          link fills its type and reference. Select the downloaded file above, then
+                          upload it to run extraction. After the discrepancy reaches $400, repeat
+                          with the supplier credit.
+                        </p>
+                      </div>
+                    ) : (
+                      <details className="source-template">
+                        <summary>Required source fields</summary>
+                        <p>
+                          Use your own TXT, CSV, JSON, or text PDF. Northstar sample downloads
+                          belong to the sample case and will not match this case.
+                        </p>
+                        <pre>{`Document type: Goods receipt (or invoice, purchase order, supplier credit)\nSupplier: ${selected?.supplier}\nPurchase order: ${selected?.poNumber}\nInvoice: ${selected?.invoiceNumber}\nItem: ${selected?.sku}\nCurrency: USD\nReference: [the document's unique reference]\nAccepted quantity: [newly received whole units, for a receipt]\nCredit amount: [USD amount, for a supplier credit]`}</pre>
+                        <p>
+                          For an invoice or purchase order, include the whole-unit quantity, unit
+                          price, and total. Replace the bracketed fields with the actual values for
+                          your document.
+                        </p>
+                      </details>
+                    )}
+                    {!workspace?.service.inferenceEnabled && (
+                      <p className="form-note warning-text">
+                        Document extraction is not configured. You can use manual receipt and credit
+                        entry instead.
+                      </p>
+                    )}
+                  </>
+                )}
+                {modal === 'create' && (
+                  <>
+                    <div className="form-grid">
+                      <Field label="Supplier">
+                        <input
+                          name="supplier"
+                          required
+                          autoFocus
+                          maxLength={160}
+                          placeholder="Supplier name"
+                        />
+                      </Field>
+                      <Field label="Item description">
+                        <input
+                          name="description"
+                          required
+                          maxLength={200}
+                          placeholder="e.g. Steel mounting brackets"
+                        />
+                      </Field>
+                      <Field label="Purchase order reference">
+                        <input name="poNumber" required maxLength={100} placeholder="PO-1042" />
+                      </Field>
+                      <Field label="Invoice reference">
+                        <input
+                          name="invoiceNumber"
+                          required
+                          maxLength={100}
+                          placeholder="INV-2041"
+                        />
+                      </Field>
+                      <Field label="Exact SKU">
+                        <input name="sku" required maxLength={100} placeholder="BRK-040" />
+                      </Field>
+                      <Field label="Unit price (USD)">
+                        <input
+                          name="unitPrice"
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          required
+                          placeholder="40.00"
+                        />
+                      </Field>
+                      <Field label="Ordered units">
+                        <input
+                          name="orderedUnits"
+                          type="number"
+                          min="1"
+                          step="1"
+                          required
+                          placeholder="120"
+                        />
+                      </Field>
+                      <Field label="Invoiced units">
+                        <input
+                          name="invoicedUnits"
+                          type="number"
+                          min="1"
+                          step="1"
+                          required
+                          placeholder="120"
+                        />
+                      </Field>
+                      <Field label="Accepted units so far">
+                        <input
+                          name="receivedUnits"
+                          type="number"
+                          min="0"
+                          step="1"
+                          required
+                          defaultValue="0"
+                        />
+                      </Field>
+                    </div>
+                    <p className="form-note">
+                      One invoice per purchase order. Split invoicing, taxes, discounts, and foreign
+                      exchange are outside this workspace’s policy. New records are labeled
+                      synthetic.
+                    </p>
+                  </>
+                )}
+              </div>
               <div className="dialog-actions">
                 <button
                   className="button secondary"
@@ -1145,90 +1301,93 @@ export function ShortfallApp() {
           }}
         >
           <div className="proposal-review">
-            <div className="proposal-meta">
-              <span>{selected.invoiceNumber}</span>
-              <span>Evidence revision {review.sourceRevision}</span>
-            </div>
-            {(review.sourceRevision !== selected.sourceRevision ||
-              review.ledgerRevision !== selected.ledgerRevision ||
-              review.status === 'stale') && (
-              <div className="stale-warning">
-                <CircleAlert size={18} />
+            <div className="dialog-scroll">
+              <div className="proposal-meta">
+                <span>{selected.invoiceNumber}</span>
+                <span>Evidence revision {review.sourceRevision}</span>
+              </div>
+              {(review.sourceRevision !== selected.sourceRevision ||
+                review.ledgerRevision !== selected.ledgerRevision ||
+                review.status === 'stale') && (
+                <div className="stale-warning">
+                  <CircleAlert size={18} />
+                  <div>
+                    <strong>The evidence has changed.</strong>
+                    <p>
+                      This proposal uses an earlier revision. An approval attempt will be checked
+                      against the current records.
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="proposal-amount">
+                <span>
+                  {review.type === 'hold' ? 'Proposed internal hold' : 'Credit to reconcile'}
+                </span>
+                <strong>
+                  {money(review.type === 'hold' ? review.amountCents : review.creditCents)}
+                </strong>
+              </div>
+              <div className="proposal-diff">
                 <div>
-                  <strong>The evidence has changed.</strong>
-                  <p>
-                    This proposal uses an earlier revision. An approval attempt will be checked
-                    against the current records.
-                  </p>
+                  <span>Current hold</span>
+                  <strong>{money(selected.heldCents)}</strong>
+                </div>
+                <ArrowDownToLine size={17} />
+                <div>
+                  <span>Hold after execution</span>
+                  <strong>{money(review.amountCents)}</strong>
                 </div>
               </div>
-            )}
-            <div className="proposal-amount">
-              <span>
-                {review.type === 'hold' ? 'Proposed internal hold' : 'Credit to reconcile'}
-              </span>
-              <strong>
-                {money(review.type === 'hold' ? review.amountCents : review.creditCents)}
-              </strong>
-            </div>
-            <div className="proposal-diff">
-              <div>
-                <span>Current hold</span>
-                <strong>{money(selected.heldCents)}</strong>
+              <ul className="proposal-checklist">
+                {review.type === 'hold' ? (
+                  <>
+                    <li>
+                      <Check size={14} />
+                      Record the approved hold in the internal ledger
+                    </li>
+                    <li>
+                      <Check size={14} />
+                      Create the dispute and supplier follow-up task
+                    </li>
+                    <li>
+                      <Check size={14} />
+                      Read back and verify the recorded changes
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Check size={14} />
+                      Apply the verified supplier credit
+                    </li>
+                    <li>
+                      <Check size={14} />
+                      {review.amountCents === 0
+                        ? 'Release the hold and resolve the exception'
+                        : `Reduce the hold to ${money(review.amountCents)}; keep the exception open`}
+                    </li>
+                    <li>
+                      <Check size={14} />
+                      Keep the remaining purchase order quantity open
+                    </li>
+                  </>
+                )}
+              </ul>
+              <div className="proposal-policy">
+                <ShieldCheck size={14} />
+                <span>
+                  Policy {review.policyVersion} · Ledger revision {review.ledgerRevision}
+                </span>
               </div>
-              <ArrowDownToLine size={17} />
-              <div>
-                <span>Hold after execution</span>
-                <strong>{money(review.amountCents)}</strong>
-              </div>
-            </div>
-            <ul className="proposal-checklist">
-              {review.type === 'hold' ? (
-                <>
-                  <li>
-                    <Check size={14} />
-                    Record the approved hold in the internal ledger
-                  </li>
-                  <li>
-                    <Check size={14} />
-                    Create the dispute and supplier follow-up task
-                  </li>
-                  <li>
-                    <Check size={14} />
-                    Read back and verify the recorded changes
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li>
-                    <Check size={14} />
-                    Apply the verified supplier credit
-                  </li>
-                  <li>
-                    <Check size={14} />
-                    {review.amountCents === 0
-                      ? 'Release the hold and resolve the exception'
-                      : `Reduce the hold to ${money(review.amountCents)}; keep the exception open`}
-                  </li>
-                  <li>
-                    <Check size={14} />
-                    Keep the remaining purchase order quantity open
-                  </li>
-                </>
+              {reviewError && (
+                <div className="dialog-error" role="alert">
+                  <CircleAlert size={17} />
+                  <span>{reviewError}</span>
+                </div>
               )}
-            </ul>
-            <div className="proposal-policy">
-              <ShieldCheck size={14} />
-              <span>
-                Policy {review.policyVersion} · Ledger revision {review.ledgerRevision}
-              </span>
+              <p className="form-note">No payment or external message will be sent.</p>
             </div>
-            {reviewError && (
-              <div className="dialog-error" role="alert">
-                <CircleAlert size={17} />
-                <span>{reviewError}</span>
-              </div>
-            )}
             <div className="dialog-actions">
               <button
                 className="button secondary"
@@ -1273,7 +1432,6 @@ export function ShortfallApp() {
                 </button>
               )}
             </div>
-            <p className="form-note">No payment or external message will be sent.</p>
           </div>
         </Dialog>
       )}
@@ -1305,6 +1463,20 @@ function EvidenceDocument({
   onRetry: () => void;
 }) {
   const evidence = evidenceIndex === null ? null : document.evidence[evidenceIndex];
+  const quoteRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const quote = quoteRef.current;
+    if (!quote) return;
+    // Keep the selected quote inside its source panel without moving the application shell.
+    const source = quote.closest('pre');
+    if (!source) return;
+    const quoteBounds = quote.getBoundingClientRect();
+    const sourceBounds = source.getBoundingClientRect();
+    source.scrollTo({
+      top: source.scrollTop + quoteBounds.top - sourceBounds.top - source.clientHeight / 3,
+      behavior: 'auto',
+    });
+  }, [document.id, evidenceIndex]);
   const quoteIndex = evidence ? document.text.indexOf(evidence.quote) : -1;
   const start =
     evidence && document.text.slice(evidence.start, evidence.end) === evidence.quote
@@ -1338,7 +1510,7 @@ function EvidenceDocument({
           {evidence && start >= 0 ? (
             <>
               {document.text.slice(0, start)}
-              <mark>{document.text.slice(start, end)}</mark>
+              <mark ref={quoteRef}>{document.text.slice(start, end)}</mark>
               {document.text.slice(end)}
             </>
           ) : (

@@ -1,6 +1,8 @@
 # Four-minute demonstration
 
-Open [Shortfall](https://shortfall.95.179.254.189.sslip.io) in a fresh private browser window. Choose **Explore a sample case**; the **Guide** control reopens entry instructions. **Create your own case** opens explicit business-field intake. No account, API key, environment file, or installation is required.
+Open [Shortfall](https://shortfall.95.179.254.189.sslip.io) in a fresh private browser window. Choose **Explore a sample case**; **Home** returns to entry while preserving the workspace. **Create your own case** opens explicit business-field intake. No account, API key, environment file, or installation is required. A new anonymous session starts only after an explicit Explore or Create choice.
+
+The Home/End session update passed local verification on 5 November and awaits public deployment. Browser Back and Forward follow Home, Exceptions, and Activity without replacing the case. Export needed records before confirming **End session**: it revokes the server token and expires the cookie, while approved queued work and spending records remain. Reload then stays at Home until explicit re-entry.
 
 The public Vultr application, three API checks, two browser checks, and live receipt/credit extraction have passed. The [published presentation](https://shortfall.95.179.254.189.sslip.io/submission/) uses real application actions, synthesized narration, and repository evidence. It runs **252.24 seconds (4:12)** at 1600 × 900, 25 fps, and is **15,884,185 bytes**. Technical encoding, delivery, browser playback, all eight seek points, and readable captions are verified.
 
@@ -43,7 +45,9 @@ The frozen 24-document baseline accepted 9/12 supported documents exactly and se
 
 Across those separate sets: **28 unique synthetic documents, 31 settled calls, $0.474656**, with no uncertain usage. These are project-authored records with no independent reviewer. Keep the baseline, regression, and fresh holdout separate; do not present a combined accuracy percentage. [Full evaluation](evaluation-results.md)
 
-The regular test run recorded 50 passes and one unconfigured database test skipped; the database integration test passed separately. Full typechecking and formatting checks passed. The latest public suite passed three API and two browser tests in 18.3 seconds. Additional public checks covered fresh own-case entry, the guide, persistence, visitor isolation, and desktop/mobile presentation. An additional deployed CSV upload verified nine exact evidence spans and the expected $22.50 hold. Restart/container replacement, isolated database restoration, and concurrent spending limits were exercised. [Workflow verification](evaluation.md)
+The current regular suite contains 53 tests: 52 passed and one unconfigured database test skipped; the database integration test passed separately. The earlier public suite passed three API and two browser tests in 18.3 seconds. Additional public checks covered independent-case entry, persistence, visitor isolation, and desktop/mobile presentation. An additional deployed CSV upload verified nine exact evidence spans and the expected $22.50 hold. Restart/container replacement, isolated database restoration, and concurrent spending limits were exercised. [Workflow verification](evaluation.md)
+
+Six new navigation/layout tests passed locally, covering 1280 × 560, 1366 × 650, 1440 × 760, and 390 × 700 viewports. They verify pages and dialogs, keyboard-reachable actions, internal panel scrolling, Home and browser history, and session revocation. Long information remains accessible by scrolling within its panel while primary actions stay reachable. Public verification of this update remains pending.
 
 The application persists internal ledger changes and follow-up tasks. It does not make payments, update an ERP, or contact suppliers. The sample demonstrates a $400 discrepancy resolved, not recovered cash or measured customer savings.
 
