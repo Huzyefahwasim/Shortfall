@@ -24,6 +24,8 @@ UI release snapshot: 6 November 2026, deployed revision 34bba3a. These results c
 | Recorded public workflow, 6 November | Passed | Release 34bba3a; 54 recording cues, 15 exact live source quotes, and correct reconciled ledger/export |
 | Published presentation, 6 November | Published; technical metadata, playback, seeking, and readability verified | MP4: 261.04 seconds, 1600 × 900, 25 fps, 13,021,718 bytes; public cover and 54 English VTT cues; action speed factor 1 with 4.84 seconds of idle close time removed |
 | Public media delivery/playback | Passed | HTML, MP4, and VTT returned HTTP 200; a 1,024-byte range returned HTTP 206; playback advanced; all nine seek points passed with no JavaScript/media errors or application API calls |
+| Eight slide deck | Published; visual and download checks passed | All eight PPTX slides and eight PDF pages passed visual review without overlap/clipping. PPTX retains editable tables, diagrams, and notes; PDF has selectable text, embedded Segoe UI regular/bold, and two working links |
+| Public deck delivery | Passed | [PDF](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pdf), [PowerPoint](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pptx), and player returned HTTP 200; file types and hashes matched the verified local files |
 
 The [hosted CI run for 34bba3a](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/42109353439) passed all 53 tests, including configured database integration, and all 12 API/browser workflows. The full public suite then passed in 1.1 minutes. The interface separates Overview, Documents, and Activity, uses pagination for record lists, and keeps one intentional vertical scroll area in the document reader. Mobile pages use ordinary vertical flow. Browser workflows use manual entry; separate live smoke runs call the provider.
 
@@ -103,9 +105,10 @@ Evidence checks require exact unique source quotes, server-calculated offsets, m
 - [x] Verify public repository access and the passing hosted CI run.
 - [x] Publish the 6 November narrated MP4, cover, and captions and verify technical metadata and recording checks.
 - [x] Complete public browser playback, all nine seek points, and caption/readability review of the new recording.
-- [ ] Complete presentation PDF and final event-form verification.
+- [x] Complete deck render validation and publication of the PDF and editable PowerPoint.
+- [ ] Confirm enrollment/team/deadline details and complete the official event form.
 
-The deployed restart and isolated restoration were exercised, not inferred from local retry tests or the existence of a dump. Public repository access, media publication, recording checks, and public playback are verified. Presentation PDF, enrollment/deadline confirmation, and the event form remain. [Media details](submission/media-notes.md)
+The deployed restart and isolated restoration were exercised, not inferred from local retry tests or the existence of a dump. Public repository access, video playback, and deck rendering/downloads are verified. Enrollment/team/deadline confirmation and the official form remain. [Media details](submission/media-notes.md)
 
 ## Document-quality evaluation
 

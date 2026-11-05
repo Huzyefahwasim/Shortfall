@@ -28,8 +28,21 @@ The 6 November recording passed 54 cue checks, verified 15 exact live source quo
 | Narrated MP4 | [demo.mp4](https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4) | Published; delivery, technical metadata, playback, and nine seek points verified |
 | 16:9 cover | [cover.png](https://shortfall.95.179.254.189.sslip.io/submission/cover.png) | Published |
 | Captions | [captions.vtt](https://shortfall.95.179.254.189.sslip.io/submission/captions.vtt) | Published |
-| Slide content and speaker notes | [slide-content.md](slide-content.md) | Available; export the presentation as PDF for submission |
-| Submission text | [entry.json](entry.json) | Public video and cover URLs included; presentation PDF remains to be supplied |
+| Slide PDF | [shortfall-pitch.pdf](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pdf) | Eight pages; published, visually reviewed, and public download verified |
+| Editable PowerPoint | [shortfall-pitch.pptx](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pptx) | Eight editable slides with native comparison table, diagrams, and notes; published and verified |
+| Slide content and speaker notes | [slide-content.md](slide-content.md) | Text reference for the separate deck |
+| Submission text | [entry.json](entry.json) | Verified public video, cover, PDF, and PPTX URLs included |
+
+The deck is separate from the narrated demonstration. Upload its PDF as the slide presentation; keep the PPTX for editing. Repository copies: [PDF](deck/shortfall-pitch.pdf) and [PPTX](deck/shortfall-pitch.pptx). All eight reimported PPTX slides and all eight PDF pages passed visual review without overlap or clipping. The PDF preserves selectable text, embeds Segoe UI regular and bold, and contains two working links. Public PDF, PPTX, and player requests returned HTTP 200; content types and file hashes matched the verified copies.
+
+## Published deck metadata
+
+Verified 6 November 2026:
+
+| Asset | Size | SHA-256 |
+| --- | --- | --- |
+| PDF | 234,939 bytes | `77727f4211fbe96f209d6891bcf5a5ddd5b98ce97c1f156809e4fbb3987b80dd` |
+| PPTX | 491,587 bytes | `33c1c236bd4264b5b2083aaffcd2c6af90c0b8acaecb22d9f1c2b19ba30a6196` |
 
 ## Published MP4 metadata
 

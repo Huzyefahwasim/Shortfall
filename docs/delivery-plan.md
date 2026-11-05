@@ -2,7 +2,7 @@
 
 Updated 6 November 2026. Times use Asia/Karachi (PKT, UTC+5).
 
-Release 34bba3a is deployed with focused Overview, Documents, and Activity views, paginated lists, and a source reader. Hosted CI and configured local checks passed all 53 tests and 12 API/browser workflows. The full public suite passed all 12 workflows; separate desktop and mobile visual checks passed. Earlier live inference, restart/persistence, and isolated restoration checks remain recorded. Document evaluation is complete, with its baseline and later CSV checks separate. The 6 November MP4, cover, and captions are published; technical metadata, recording checks, public playback, and readability are verified. Presentation PDF, enrollment/deadline confirmation, and the event form remain outstanding.
+Release 34bba3a is deployed with focused Overview, Documents, and Activity views, paginated lists, and a source reader. Hosted CI and configured local checks passed all 53 tests and 12 API/browser workflows. The full public suite passed all 12 workflows; separate desktop and mobile visual checks passed. Earlier live inference, restart/persistence, and isolated restoration checks remain recorded. Document evaluation is complete, with its baseline and later CSV checks separate. The 6 November MP4, cover, and captions are published; technical metadata, recording checks, public playback, and readability are verified. The eight slide PDF and editable PowerPoint are published and verified. Enrollment/team/deadline confirmation and the event form remain outstanding.
 
 ## Current position
 
@@ -25,7 +25,7 @@ Release 34bba3a is deployed with focused Overview, Documents, and Activity views
 | Concurrent budget admission | One of two racing reservations accepted at each global/workspace boundary |
 | Document evaluation | 28 unique synthetic documents, 31 settled calls, $0.474656; three evaluation sets reported separately |
 | Video and narration | Published 6 November MP4: 261.04 seconds, 1600 × 900 at 25 fps, 13,021,718 bytes; 54 cues, 15 exact source quotes, action speed 1, and 4.84 seconds of idle close time removed. Public playback, nine seek points, and caption readability verified |
-| Slide presentation | Slide content and speaker notes available; presentation PDF still to be exported and supplied |
+| Slide presentation | Eight slide [PDF](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pdf) and [editable PowerPoint](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pptx) published; all eight slides/pages passed visual review and public downloads matched verified hashes |
 | Cover and final public asset links | [Presentation page](https://shortfall.95.179.254.189.sslip.io/submission/), MP4, cover, and captions published; technical metadata verified |
 | Repository visibility | Public access verified; [34bba3a hosted CI passed](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/42109353439) |
 | Event form | Final fields, assets, and LabLab submission still required |
@@ -40,7 +40,7 @@ Internal submission target: **7 November 2026, 18:00 PKT**, or an earlier offici
 
 | Date | Work | Exit condition |
 | --- | --- | --- |
-| 6 Nov | Export presentation PDF | Current interface recording, public playback, captions, judge entry, independent case, and public API/browser checks have passed; presentation PDF remains |
+| 6 Nov | Deck and media complete | PDF/PPTX visual and public download checks passed. Video, judge entry, independent case, and public API/browser checks have passed |
 | By 7 Nov, 18:00 PKT | Submit | Complete event fields and confirm submission before the internal target or an earlier official cutoff |
 
 Keep implementation within the original 30–32 focused-hour allowance, then reserve four hours for recording and packaging. Reduce secondary scope when a gate slips. Do not spend the final submission window adding features.
@@ -63,7 +63,7 @@ The first release permits one invoice per supplier/PO within a workspace. Route 
 | Correctness | Stale approvals fail; retries cannot duplicate effects; credit release requires approval |
 | Recovery | A deployed worker restart and database restore preserve the expected records |
 | Model quality | Published baseline: 9/12 supported documents accepted exactly, three valid CSVs withheld, all 12 challenge expectations met; later checks kept separate |
-| Submission | App, repository, 6 November video, cover, captions, and license are available and media playback is verified; presentation PDF, enrollment/deadline confirmation, and event form remain |
+| Submission | App, repository, video, PDF/PPTX deck, cover, captions, and license are available; media and deck checks passed. Enrollment/team/deadline confirmation and event form remain |
 
 Restart and restoration were exercised. The frozen baseline preceded a CSV validation correction; the three targeted reruns passed afterward. A fresh four-document CSV holdout then met its two acceptance and two review expectations. These project-authored synthetic records have no independent reviewer and do not establish customer-document accuracy. [Evaluation artifacts](evaluation-results.md)
 
@@ -123,7 +123,8 @@ The [repository](https://github.com/Huzyefahwasim/vultr-hackathon) is public and
 - [x] Publish the MP4, 16:9 cover, and captions; verify delivery and encoding metadata.
 - [x] Publish the recording of release 34bba3a with 54 cues and 15 exact live source quotes.
 - [x] Complete public browser playback, all nine seek points, and caption/readability review of the 6 November MP4.
-- [ ] Export the presentation as PDF from the [slide content and speaker notes](submission/slide-content.md) and attach it to the event form.
+- [x] Verify and publish the eight slide PDF and editable PowerPoint.
+- [ ] Attach the PDF to the slide upload field and the MP4 to the video field in the official form.
 - [ ] Enter title, summary, description, Challenge 02, technology tags, and participation mode.
 - [ ] Check the actual form's limits; standard guidance uses 5–50 title characters, 50–255 summary characters, and 600–2,000 description characters.
 - [x] Keep the MP4 under 300 MB: 6 November duration 4:21, size approximately 13.0 MB.

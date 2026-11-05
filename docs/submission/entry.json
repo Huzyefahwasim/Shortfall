@@ -24,14 +24,16 @@
   "creator": "Huzyefah Wasim",
   "team": "Solo full stack developer",
   "videoUrl": "https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4",
-  "slidesPdfUrl": null,
+  "slidesPdfUrl": "https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pdf",
   "coverImageUrl": "https://shortfall.95.179.254.189.sslip.io/submission/cover.png",
-  "note": "Copy the text fields into the event form and choose its available tags. Upload the MP4 and cover if requested. Supply the presentation PDF. Confirm enrollment, exact cutoff/timezone, and successful submission in the dashboard.",
+  "note": "Copy the text fields into the event form and choose its available tags. Upload the MP4 as video, the PDF as slides, and the cover where requested. The PPTX is the editable deck source. Confirm enrollment, solo team, exact cutoff/timezone, and successful submission in the dashboard.",
   "presentationUrl": "https://shortfall.95.179.254.189.sslip.io/submission/",
   "captionsUrl": "https://shortfall.95.179.254.189.sslip.io/submission/captions.vtt",
   "fieldCharacterCounts": {
     "title": 38,
     "shortDescription": 216,
     "longDescription": 1955
-  }
+  },
+  "slidesPptxUrl": "https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pptx",
+  "slidesStatus": "Published and verified"
 }

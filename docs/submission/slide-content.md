@@ -1,6 +1,6 @@
 # Slide content and speaker notes
 
-Eight slides, updated 6 November 2026. Use the slide text on screen and the notes when speaking. Add screenshots from the current application. Export the presentation as PDF for LabLab.
+Eight slides, updated 6 November 2026. Download the [submission PDF](deck/shortfall-pitch.pdf) or [editable PowerPoint](deck/shortfall-pitch.pptx). The finished deck follows this story with product screenshots and editable diagrams; this outline provides additional speaking context.
 
 ## 1. Shortfall
 

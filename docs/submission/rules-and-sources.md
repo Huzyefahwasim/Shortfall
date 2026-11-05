@@ -17,9 +17,10 @@ Public requirements checked **6 November 2026**. The event and rulebook now reso
 | Repository URL | [GitHub repository](https://github.com/Huzyefahwasim/vultr-hackathon) | Public code and setup documentation |
 | Video | [Download MP4](https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4) | MP4/MOV, maximum 300 MB; under five minutes recommended |
 | Cover | [Download cover](https://shortfall.95.179.254.189.sslip.io/submission/cover.png) | Event lists a cover; generic guide calls it optional and crops to 16:9 |
-| Slide presentation | Export the finished presentation as PDF | PDF required by default; PPTX alone does not meet that format |
+| Slide presentation | [Submission PDF](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pdf), eight pages, published and verified | PDF required by default; PPTX alone does not meet that format |
+| Editable deck source | [PowerPoint](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pptx), eight slides with notes, published and verified | Editable source for revisions; upload the PDF where slides are requested |
 
-Use the MP4 and cover files if the form asks for uploads. A public URL does not replace an upload field. [Submission guide](https://lablab.ai/delivering-your-hackathon-solution)
+Use the MP4, PDF, and cover files where the form asks for uploads. A public URL does not replace an upload field. The video demonstrates the working application; the PDF is the separate slide presentation. [Submission guide](https://lablab.ai/delivering-your-hackathon-solution)
 
 Also available: [presentation player](https://shortfall.95.179.254.189.sslip.io/submission/) · [captions](https://shortfall.95.179.254.189.sslip.io/submission/captions.vtt) · [slide content](slide-content.md) · [spoken pitch](../pitch.md) · [judge quickstart](judge-quickstart.md).
 
@@ -55,7 +56,8 @@ Keep the frozen 24-document baseline, three targeted CSV reruns, and four fresh 
 - [x] Prepare the public app, repository, video, cover, and captions.
 - [x] Prepare slide content, spoken pitch, and form text.
 - [x] Keep the three evaluation sets separate in the presentation copy.
-- [ ] Export the presentation as PDF and attach it.
+- [x] Complete final deck render validation and publish the PDF and editable PowerPoint.
+- [ ] Attach the PDF to the official form's slide field.
 - [ ] Select the actual form's track, category, and technology options.
 - [ ] Upload required files, enter the public links, and review every required field.
 - [ ] Submit and confirm the dashboard records the entry.

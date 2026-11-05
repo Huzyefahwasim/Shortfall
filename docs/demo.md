@@ -8,7 +8,8 @@ The public Vultr application passed all 12 API/browser workflows, including navi
 
 - [MP4](https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4), [cover](https://shortfall.95.179.254.189.sslip.io/submission/cover.png), and [captions](https://shortfall.95.179.254.189.sslip.io/submission/captions.vtt)
 - [Narration](submission/narration.txt), [timing cues](submission/narration-timing.json), and [media credits](submission/media-notes.md)
-- [Slide content and speaker notes](submission/slide-content.md); export the presentation as PDF for submission
+- [Submission slide PDF](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pdf) and [editable PowerPoint](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pptx): eight slides, published and verified
+- [Slide content and speaker notes](submission/slide-content.md); the deck is separate from the narrated MP4
 
 ## Run of show
 
@@ -55,4 +56,4 @@ The application persists internal ledger changes and follow-up tasks. It does no
 
 If extraction fails, show its review state. A corrected source should be uploaded using the same document type/reference; retrying an unchanged file does not add missing facts. A manual-entry walkthrough can demonstrate the deterministic workflow and must be described as manual entry. Keep model use within the remaining allowance.
 
-Recording and public playback review confirmed the $800 obsolete proposal, $400 current amount, $4,400 net invoice, ten open PO units, source quotes, business benefits, and closing disclosures. All nine seek points were readable. The player advanced without JavaScript or media errors or application API calls; HTTP range requests returned partial video content. Presentation PDF, enrollment/deadline confirmation, and event-form completion remain. Standard guidance requires MP4/MOV up to 300 MB and PDF slides; the event form takes precedence. See [submission rules](submission/rules-and-sources.md) and the [judge quickstart](submission/judge-quickstart.md).
+Recording and public playback review confirmed the $800 obsolete proposal, $400 current amount, $4,400 net invoice, ten open PO units, source quotes, business benefits, and closing disclosures. All nine seek points were readable. The player advanced without JavaScript or media errors or application API calls; HTTP range requests returned partial video content. The separate deck passed all eight slide/PDF page visual checks and public download verification. Enrollment/team/deadline confirmation and event-form completion remain. Upload the deck PDF as the slide presentation and the MP4 as the video. Standard guidance requires MP4/MOV up to 300 MB and PDF slides; the event form takes precedence. See [submission rules](submission/rules-and-sources.md) and the [judge quickstart](submission/judge-quickstart.md).

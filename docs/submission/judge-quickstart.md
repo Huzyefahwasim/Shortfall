@@ -4,6 +4,8 @@ Open [Shortfall](https://shortfall.95.179.254.189.sslip.io) in a fresh private/i
 
 The Overview, Documents, and Activity interface was deployed as 34bba3a on 6 November 2026. All 53 tests and 12 API/browser workflows passed in hosted CI, and all 12 workflows passed against the public deployment.
 
+Presentation materials: [watch the narrated demonstration](https://shortfall.95.179.254.189.sslip.io/submission/), [slide PDF](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pdf), and [editable PowerPoint](https://shortfall.95.179.254.189.sslip.io/submission/shortfall-pitch.pptx). The video and eight slide deck are published and verified. The PDF is the slide presentation; the PPTX includes editable diagrams, a comparison table, and speaker notes.
+
 Use synthetic records. The application records real changes in its internal demonstration ledger; it does not send payments or update an ERP.
 
 ## Explore the sample
