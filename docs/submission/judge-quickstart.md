@@ -2,23 +2,23 @@
 
 Open [Shortfall](https://shortfall.95.179.254.189.sslip.io) in a fresh private/incognito window. You do not need an account, API key, environment file, or local installation. Choose **Explore a sample case** or **Create your own case** to start a private anonymous workspace with a seven-day session. Opening the entry page alone does not create a session. Keeping the same browser session preserves access; a separate private session can start a separate workspace.
 
-The Home/End session and bounded-layout update was deployed as b236569 on 5 November 2026 and passed public verification.
+The Overview, Documents, and Activity interface was deployed as 34bba3a on 6 November 2026. All 53 tests and 12 API/browser workflows passed in hosted CI, and all 12 workflows passed against the public deployment.
 
 Use synthetic records. The application records real changes in its internal demonstration ledger; it does not send payments or update an ERP.
 
 ## Explore the sample
 
-Choose **Explore a sample case** at the entry screen. **Home** returns to entry while preserving the current workspace; **Return to workspace** resumes it.
+Choose **Explore a sample case** at the entry screen. **Home** returns to entry while preserving the current workspace; **Return to workspace** resumes it. **How it works & workspace limits** opens the short help dialog. Within Northstar, **Guided case** explains the next step.
 
-1. Open Northstar Components, invoice INV-8821 and purchase order PO-1042. The invoice has 120 units at $40; the initial accepted quantity is 100. Confirm the $800 discrepancy.
-2. Select **Prepare resolution**. Inspect the $800 proposal, then close review without approving.
-3. Open document upload. Download the [late receipt](https://shortfall.95.179.254.189.sslip.io/samples/receipt-late.txt), choose Goods receipt, and use reference **RCV-2042**. Select the downloaded file and upload.
-4. Wait for **Extraction verified**. Inspect a highlighted source quote. Accepted quantity becomes 110 and the discrepancy becomes $400.
-5. Expand **Previous proposals**, open the $800 proposal, and attempt **Approve changes**. The server rejects it because the evidence changed; the held amount remains zero.
-6. Select **Prepare updated plan**, review the $400 amount, and approve. Wait for **On hold** and inspect the execution record.
-7. Upload the [supplier credit](https://shortfall.95.179.254.189.sslip.io/samples/credit-note.txt) as Supplier credit, reference **CN-8821-01**. Wait for verified extraction.
-8. Select **Prepare resolution**, review the credit plus hold-release correction, and choose **Approve changes**. Confirm **Resolved**, net invoice **$4,400**, held amount **$0**, and **10 PO units open**.
-9. Export the reconciliation or case record and refresh the browser. The saved state remains.
+1. Open Northstar Components, invoice INV-8821 and purchase order PO-1042. In **Overview**, confirm 120 invoiced units at $40, 100 accepted units, and the $800 discrepancy.
+2. Select **Prepare resolution**. Inspect the $800 proposal, then choose **Close review** without approving.
+3. Open **Documents**, then **Upload**. Download the [late receipt](https://shortfall.95.179.254.189.sslip.io/samples/receipt-late.txt), choose Goods receipt, and use reference **RCV-2042**. Select the downloaded file and upload.
+4. Open RCV-2042 in the document list and wait for **Extraction verified**. Select an extracted field to highlight its supporting quote in the source reader. Choose **Close source**, then **Overview**. Accepted quantity is now 110 and the discrepancy is $400.
+5. Select **Review previous proposal** in the **Evidence changed** notice, or open the $800 proposal through **Previous proposals**. Attempt **Approve changes**. The server rejects it because the evidence changed; the held amount remains zero.
+6. Select **Prepare updated plan**, review the $400 amount, and approve. Wait for **On hold**. Open the case's **Activity** tab to inspect its execution record.
+7. Return to **Documents** and upload the [supplier credit](https://shortfall.95.179.254.189.sslip.io/samples/credit-note.txt) as Supplier credit, reference **CN-8821-01**. Open the credit and wait for **Extraction verified**.
+8. Return to **Overview**, select **Prepare resolution**, review the credit and release of the hold, and choose **Approve changes**. Confirm **Resolved**, net invoice **$4,400**, held amount **$0**, and **10 PO units open**.
+9. Inspect the reconciliation in **Activity**. Use **Export reconciliation** in Overview for CSV or **Export** beside the case tabs for the case JSON. Refresh the browser; the saved state remains.
 
 The initial documents are labeled recorded samples. Uploaded receipt/credit documents invoke the live model. Do not add the same receipt manually and upload it under a different reference; that describes two receiving events.
 
@@ -43,11 +43,15 @@ Expected initial discrepancy: **7 × $12.50 = $87.50**. Add a new receipt for th
 
 Manual entry creates labeled synthetic source records. To test extraction, attach your own supported document with matching supplier, PO, invoice where required, SKU, explicit USD, quantity, and unique document reference. The Northstar download files belong to Northstar and should fail linkage if attached to Larch.
 
-Owner/reviewer fields support assignment. They are labels in this anonymous demo, not separately authenticated employee roles.
+Open **Case details and assignment** beside the case status, then **Assign owner and reviewer**, to change ownership. These fields are labels in this anonymous demo, not separately authenticated employee roles.
 
 ## Navigate and end a session
 
-Home, Exceptions, and Activity use `#home`, `#exceptions`, and `#activity`. Browser Back and Forward move between these views without replacing the selected case or session. Case history has its own **Activity** tab. Long records and lists scroll inside their panels, keeping the page and primary actions usable.
+Home, Exceptions, and Activity use `#home`, `#exceptions`, and `#activity`. Browser Back and Forward move between these views without replacing the selected case or session. The top navigation's **Activity** shows events across the workspace; the case's **Activity** tab shows that invoice's execution records and history.
+
+Use **Overview** for the comparison and approval, **Documents** for sources, and **Activity** for the result. Selecting a comparison row also opens its source in Documents. Choose a document, select a field, and read its highlighted quote. **Close source** returns to the document list. The source text has its own scroll area for long records.
+
+Cases, documents, proposal history, and activity use **Previous page** and **Next page** controls. Check the displayed range when looking for an older record. On a phone, **Back to cases** returns from an invoice to the queue; the page flows vertically, while long source text remains in the reader.
 
 To leave the anonymous workspace, choose **End session** and confirm **End session** in the dialog. **Keep working** cancels. Export anything needed first: ending a session revokes its server token, expires its browser cookie, and removes browser access to that workspace. There is no account-based recovery. Approved queued work, stored records, and spending accounting remain. Reload stays on Home; a new session starts only when you explicitly choose Explore or Create again.
 
@@ -59,7 +63,7 @@ To leave the anonymous workspace, choose **End session** and confirm **End sessi
 - Supply conflicting identifiers or an unsupported source. The case stays in review.
 - Reset affects the current workspace's cases; it does not reset model-spend accounting.
 
-The navigation/layout regressions passed in CI across 1280 × 560, 1366 × 650, 1440 × 760, and 390 × 700. Targeted public tests covered all views/dialogs at 1280 × 560 and 390 × 700, Home/history, the skip link, cross-tab logout, rejection of the old token, explicit re-entry, and the complete receipt/credit workflow. Separate public visual checks passed at all four sizes; Home and all nine new-case fields fit at 1280 × 560. Long records scroll within bounded panels.
+The current navigation/layout regressions passed locally, in CI, and against the public deployment at 1280 × 500, 1280 × 550, 1010 × 500, and 390 × 700. They check visible actions without scrolling, source reading and quoted evidence, complete pagination, Home/history, cross-tab logout, rejection of the old token, and explicit re-entry. Public visual checks also covered 1366 × 650 and 1440 × 760. Desktop Home and Overview have no internal scrolling; mobile keeps the main action visible before the detailed comparison. The complete receipt/credit workflow and export passed on the public site.
 
 If the file itself needs correction, upload a corrected file using the same document type and reference. This supersedes the current source while preserving its history. **Retry extraction** processes the same source again; it does not repair missing fields. A pending or unverified current document blocks a new proposal.
 

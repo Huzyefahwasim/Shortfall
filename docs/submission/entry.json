@@ -1,11 +1,11 @@
 {
   "title": "Shortfall: invoice exception workbench",
   "shortDescription": "Resolve invoice quantity discrepancies with cited evidence, approvals tied to current records, and durable execution. Shortfall runs on Vultr and tracks a case from a late receipt through an approved supplier credit.",
-  "longDescription": "Shortfall helps accounts payable reviewers resolve invoices for goods their receiving team has not accepted. Each case combines source evidence, assigned follow-up work, a proposed internal ledger change, approval, and execution history.\n\nThe key behavior is approval validity when evidence changes. In the synthetic demonstration, an invoice bills 120 units at $40, while receiving records show 100. A late receipt adds ten units and changes the discrepancy from $800 to $400. Shortfall rejects the old approval. After the reviewer approves the revised hold and a verified $400 supplier credit, the worker reconciles the invoice to $4,400 while keeping ten purchase-order units open.\n\nVultr hosts the Next.js application, API, PostgreSQL database, and durable worker. Claude Opus 5.5 extracts fields and exact source quotes; code validates evidence, calculates money, checks current approval versions, and applies idempotent changes. The deployed workflow, restart recovery, backup restoration, and budget limits have been exercised.\n\nThe frozen 24-document evaluation accepted 9/12 supported documents exactly and sent three CSVs to review; all 12 challenge expectations passed. After a CSV validation correction, the three targeted reruns passed. A separate fresh four-CSV check accepted two supported documents and withheld two as expected. These small synthetic sets are reported separately.\n\nThe prototype supports independent cases, text-based documents, USD, whole units, and one invoice per supplier/purchase order. It uses synthetic data and an internal ledger, with no payments or ERP writes. The target buyer is a distributor's finance manager. Operator interviews, authenticated roles, and an accounting connector are next; customer demand and a proposed $99 monthly pilot price remain unvalidated.",
-  "challenge": "02 · Future of Work",
+  "longDescription": "Shortfall helps accounts payable reviewers resolve quantity discrepancies as receiving evidence changes. Manual review requires comparing the invoice, purchase order, and receipts, recalculating late updates, and recording the decision for the next reviewer. Existing accounting systems offer matching controls; Shortfall focuses on completing the exception.\n\nEach case combines cited source fields, calculated amounts, approval against current evidence, assigned tasks, and execution history. The expected benefit is less searching, repeated arithmetic, and handover work. Tracking receipts and credits helps address the risk of approving unreceived quantities, missing a credit, or retaining an outdated hold.\n\nIn the synthetic demo, 120 units at $40 produce a $4,800 invoice. With 100 received, the gap is $800. A late receipt adds ten units, reducing it to $400. The server rejects the old approval. A reviewer approves the revised hold, then a verified $400 credit and hold release. The result is $4,400 net with ten purchase order units open.\n\nVultr hosts the web/API, PostgreSQL, and durable worker. Claude Opus 5.5 extracts fields and source quotes; code validates evidence, calculates money, checks approval revisions, and prevents duplicate execution.\n\nThe original 24 document evaluation accepted 9/12 supported inputs, sent three valid CSVs to review, and met all 12 other expected outcomes. After a validator fix, three targeted reruns passed. Four fresh CSV cases then met their expected acceptance or review outcomes. The report keeps these synthetic sets separate.\n\nThe internal demo ledger has no bank or ERP connection. Time and cost savings remain unmeasured; a $400 correction is not cash saved. Cases support USD, whole units, and one invoice per supplier/order. The proposed buyer is a distributor's finance manager; $99/workspace/month is a price to test. Next: operator interviews, authenticated roles, and an accounting connector.",
+  "challenge": "02 · Powering the Future of Work",
   "participationMode": "Online",
   "demoPlatform": "Vultr Cloud Compute",
-  "demoUrl": "https://shortfall.95.179.254.189.sslip.io",
+  "demoUrl": "https://shortfall.95.179.254.189.sslip.io/",
   "repositoryUrl": "https://github.com/Huzyefahwasim/vultr-hackathon",
   "suggestedCategories": [
     "Finance & Accounting",
@@ -22,11 +22,16 @@
     "Caddy"
   ],
   "creator": "Huzyefah Wasim",
-  "team": "Solo full-stack developer",
+  "team": "Solo full stack developer",
   "videoUrl": "https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4",
   "slidesPdfUrl": null,
   "coverImageUrl": "https://shortfall.95.179.254.189.sslip.io/submission/cover.png",
-  "note": "Use the categories available in the actual event form. Public media delivery, metadata, playback, and caption readability are verified. The presentation PDF must still be supplied.",
+  "note": "Copy the text fields into the event form and choose its available tags. Upload the MP4 and cover if requested. Supply the presentation PDF. Confirm enrollment, exact cutoff/timezone, and successful submission in the dashboard.",
   "presentationUrl": "https://shortfall.95.179.254.189.sslip.io/submission/",
-  "captionsUrl": "https://shortfall.95.179.254.189.sslip.io/submission/captions.vtt"
+  "captionsUrl": "https://shortfall.95.179.254.189.sslip.io/submission/captions.vtt",
+  "fieldCharacterCounts": {
+    "title": 38,
+    "shortDescription": 216,
+    "longDescription": 1955
+  }
 }

@@ -1,104 +1,113 @@
 # Slide content and speaker notes
 
-Use the ink/gray/blue finance-console design and actual screenshots. Export the presentation as PDF for submission. Use actual application and repository pages for the separate voiceover video.
+Eight slides, updated 6 November 2026. Use the slide text on screen and the notes when speaking. Add screenshots from the current application. Export the presentation as PDF for LabLab.
 
 ## 1. Shortfall
 
-**Invoice quantity exceptions for finance and receiving**
+**The proposed hold was $800. A late receipt makes it $400.**
 
-Review current source evidence, approve the exact change, and inspect the executed result.
+Review the changed evidence before approving the correction.
 
-Visual: one readable crop of the current application.
+Huzyefah Wasim · solo developer
 
-Speaker note: Introduce the AP reviewer and a late receiving record. Explain the task before discussing architecture.
+**Visual:** the previous proposal beside the current discrepancy.
 
-## 2. A receipt can change the decision
+**Speaker note:** Open with the reviewer facing two different amounts. Explain how the receipt changed the decision before introducing the architecture.
 
-Sources → comparison → approval → execution → reconciliation
+## 2. Reduce the work around a changed receipt
 
-Finance and receiving share one case with an owner, reviewer, evidence, and history.
+**Manual review:** compare invoice, order, and receipts; recalculate late changes; explain the decision to the next reviewer.
 
-Visual: five-step workflow, with the human approval step visible.
+**With Shortfall:** inspect cited fields, calculated amounts, current approvals, assigned tasks, and shared history in one case.
 
-Speaker note: The proposal must remain tied to the records that supported it. New evidence requires another review.
+**Expected time benefit:** less searching, repeated arithmetic, and handover work.
 
-## 3. Reject the obsolete $800 approval
+**Visual:** the manual steps beside the matching case views.
 
-120 invoiced × $40 = $4,800\
-100 received → $800 discrepancy\
-110 received → $400 discrepancy
+**Speaker note:** Existing accounting systems already offer matching controls. This workflow targets the work of resolving a changing exception. Time savings need operator measurement. Judges can open Northstar or create an independent case using the same engine.
 
-The server rejects the previous proposal.
+Sources: [Microsoft invoice matching](https://learn.microsoft.com/en-us/dynamics365/finance/accounts-payable/accounts-payable-invoice-matching) · [Ramp received quantity checks](https://support.ramp.com/hc/en-us/articles/30227975187731-3-Way-Match-with-Ramp-Procurement)
 
-Visual: actual late-receipt upload, source highlight, and stale-approval response.
+## 3. Show the approval that fails
 
-Speaker note: Show the old proposal before importing the new receipt. Attempt the old approval so the judge sees enforcement.
+120 invoiced × $40 = **$4,800**
 
-## 4. Reconcile the invoice; keep the order open
+100 received → **$800 discrepancy**
 
-Approve $400 internal hold\
-Verify $400 supplier credit\
-Approve credit and hold release
+110 received → **$400 discrepancy**
 
-**$4,400 net invoice · 10 PO units open**
+**The server rejects the old $800 approval.**
 
-Visual: actual final ledger, execution history, and export.
+**Visual:** the receipt quote and the rejected approval.
 
-Speaker note: Importing the credit does not apply it. Approval precedes execution. This is an internal demonstration ledger with no payment or ERP write.
+**Speaker note:** Prepare the old proposal before uploading the receipt. Inspect a field and its source quote. Try the earlier approval and show that the held amount stays at zero.
 
-## 5. Vultr runs the workflow
+## 4. Finish the correction
 
-Caddy → Next.js web/API → PostgreSQL\
-Node worker → Claude Opus 5.5
+Approve $400 hold → verify $400 credit → approve credit and hold release
 
-PostgreSQL stores cases, evidence, approvals, durable jobs, and execution receipts.
+**$4,400 net invoice · $0 held · 10 PO units open**
 
-Visual: one diagram with the Vultr boundary and external model API.
+**Financial goal:** fewer overpayments and missed credits through checks on current quantities, recorded credits, and revised approvals.
 
-Speaker note: Opus extracts fields and quotes. Code checks evidence, amounts, and current approval versions. The worker keeps the provider key.
+**Visual:** reconciliation, execution history, and export.
 
-## 6. Checks with observable outcomes
+**Speaker note:** These checks address the risk of approving unreceived quantities, overlooking a credit, or retaining an outdated hold. Importing the credit leaves it pending until approval. The $400 correction is not measured cash saved: the prototype has no bank connection. Explain why resolving the invoice leaves ten units open on the purchase order.
 
-| Evaluation set | Observed outcome |
-| --- | --- |
-| Frozen 24-document baseline | 9/12 supported documents accepted exactly; 3 sent to review. All 12 challenge expectations met. |
-| Targeted CSV regression after correction | The 3 previous failures passed; 24/24 required fields correct. |
-| Fresh 4-document CSV holdout | 2 supported documents passed with 18/18 fields correct; 2 correctly sent to review. |
+## 5. Run the workflow on Vultr
 
-28 unique synthetic documents · 31 settled calls · **$0.474656**
+Vultr VM: **Next.js web/API + PostgreSQL + Node worker**
 
-Visual: three-row table; keep the original baseline separate from the later CSV checks.
+Worker → **Claude Opus 5.5** for fields and source quotes
 
-Speaker note: The baseline had 74/98 required fields correct, 24 abstained, and zero incorrectly accepted fields. The later rerun addressed a numeric CSV evidence-validation issue; it is a targeted regression, not held-out accuracy. All sets are small and project-authored, with no independent reviewer. Workflow tests also cover live public receipt/credit execution, restart recovery, isolated backup restoration, and competing budget requests.
+Code validates evidence, calculates money, and checks the approval revision.
 
-Source: [Measured evaluation and reproducible artifacts](../evaluation-results.md). Do not combine the three sets into a single accuracy percentage.
+**Visual:** place the application, database, and worker inside the Vultr boundary.
 
-## 7. Scope and buyer
+**Speaker note:** Keep the model API outside that boundary. PostgreSQL stores jobs and execution receipts. The restart test resumed one hold with one execution and one task.
 
-| Product | Published or demonstrated scope |
-| --- | --- |
-| Ramp | Bills, POs, item receipts, and receiving information |
-| Zip | Governed procurement and AP agents |
-| Shortfall | Inspect a changing-evidence exception through an approved correction |
+## 6. Keep the original test results visible
 
-Proposed buyer: finance manager at a small distributor.\
-Pilot pricing hypothesis: **$99 per workspace/month**.
+**Baseline, 24 documents:** 9/12 supported accepted, three sent to review; all 12 documents testing unsupported inputs, wrong case references, and embedded instructions produced the expected result.
 
-Speaker note: This is an established category. Our demonstration focuses on a narrow review task; we have not proven competitors lack it. Validate the proposed pilot price with operators.
+**CSV correction, three targeted reruns:** 3/3 accepted, 24/24 required fields correct.
 
-Sources: [Ramp](https://support.ramp.com/3-way-match-with-ramp-procurement), [Zip](https://zip.com/capabilities/superagents).
+**Fresh CSV set, four documents:** two accepted with 18/18 fields correct; two withheld as expected.
 
-## 8. Next steps
+**28 unique documents · 31 calls · $0.474656**
 
-Operator review → authenticated roles → accounting connector
+**Visual:** three labeled result blocks.
 
-Huzyefah Wasim · solo full-stack developer
+**Speaker note:** The baseline scored 74 correct critical fields, 24 abstentions, and zero incorrectly accepted fields out of 98 required. Keep the later CSV results separate. I created the synthetic records and labels; there was no independent reviewer. Use the linked verification record for current software test counts.
 
-[Try Shortfall](https://shortfall.95.179.254.189.sslip.io)\
-[Read the repository](https://github.com/Huzyefahwasim/vultr-hackathon)
+Sources: [Document evaluation](../evaluation-results.md) · [Workflow verification](../evaluation.md)
 
-Speaker note: Ask judges to test both the supplied case and their own supported values. Customer validation and production integrations remain next steps.
+## 7. Start with a distributor's finance team
 
-## Assembly notes
+Proposed buyer: **finance manager at a small distributor**
 
-Use [the narration](narration.txt) and [timing cues](narration-timing.json) for the roughly four-minute video. Keep the actual application demonstration near the middle for about two minutes. Source references can appear in small slide footers. The [rule review](rules-and-sources.md) describes required final media formats and the limits of the public narration-policy finding.
+Pilot price to test: **$99 per workspace/month**
+
+Focus: review changed receiving evidence and approve the invoice correction.
+
+**Visual:** buyer, user task, and proposed price.
+
+**Speaker note:** The price needs operator validation. Ramp offers matching across bills, purchase orders, and receipts. Zip offers governed procurement/AP agents. Describe Shortfall's review flow without claiming an exclusive feature.
+
+Sources: [Ramp](https://support.ramp.com/3-way-match-with-ramp-procurement) · [Zip](https://zip.com/capabilities/superagents)
+
+## 8. Try a case, then inspect the result
+
+Next: operator interviews → authenticated roles → accounting connector
+
+Synthetic records and an internal ledger. No payment or ERP update.
+
+[Live application](https://shortfall.95.179.254.189.sslip.io/) · [Repository](https://github.com/Huzyefahwasim/vultr-hackathon)
+
+**Visual:** current app screenshot and a QR code to the application.
+
+**Speaker note:** Ask judges to create a case with different supported values, inspect the evidence, and export the result. Keep customer validation and production integrations as the next steps.
+
+[Complete spoken pitch](../pitch.md) · [Video](https://shortfall.95.179.254.189.sslip.io/submission/) · [Submission fields](entry.json) · [Requirements](rules-and-sources.md)
+
+Workflow note: manual search, recalculation, and handover effort describe the target review scenario, not measured customer behavior. Microsoft and Ramp document matching controls and quantity discrepancies; neither source establishes Shortfall's time or cost savings. Validate those benefits with operators.

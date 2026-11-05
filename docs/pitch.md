@@ -1,128 +1,61 @@
-# Shortfall pitch
+# Shortfall spoken pitch
 
-Presentation outline, 4 November 2026. [Slide content and speaker notes](submission/slide-content.md) cover the eight-slide pitch. Target about four minutes for the voiceover video, with roughly two minutes of the actual application in the middle. The narration is 501 words; its timing cues allow brief pauses for source updates and approvals.
+Updated 6 November 2026. Allow about four minutes, including pauses to show the receipt update, rejected approval, and final reconciliation. Use the [eight slide outline](submission/slide-content.md) alongside this script.
 
-Use the current finance-console design: ink text, gray surfaces, restrained blue, tabular amounts, and actual application captures. Record the actual application and repository pages for the video.
+## Spoken script
 
-## Eight video scenes
+I'm about to approve an eight hundred dollar hold on an invoice. A late receipt arrives, and the right amount drops to four hundred. I built Shortfall so a finance reviewer can see what changed before approving the correction.
 
-| Scene | Time | Topic | Main content | Actual footage |
-| --- | --- | --- | --- | --- |
-| 1 | 0:00–0:22 | Shortfall | Invoice quantity exceptions for finance and receiving. | Current app with one readable case. |
-| 2 | 0:22–0:45 | Enter a private demo workspace | No account, key, or setup. Explore a sample case or create your own case. | Fresh entry screen, both choices, then Northstar. |
-| 3 | 0:45–1:45 | A late receipt changes the proposed hold | 120 invoiced; 100 received; $800 proposed. Ten more units arrive. Reject the old approval. | Prepare $800, upload receipt, inspect quote, try stale approval. |
-| 4 | 1:45–2:39 | Reconcile $4,400 and retain the open order | Approve $400 hold, validate credit, approve release. Net $4,400; 10 PO units open. | Continue through execution, history, and export. |
-| 5 | 2:39–3:00 | Vultr runs the workflow | Web/API, PostgreSQL, and worker on Vultr; Opus extracts evidence. | Repository architecture documentation. |
-| 6 | 3:00–3:25 | Check the failure paths | Verified workflow checks and separate document-evaluation sets. | Repository evaluation report with verified counts. |
-| 7 | 3:25–3:42 | Scope and buyer | Ramp matching, Zip agents, and Shortfall's demonstrated scope. | Repository pitch scope and buyer/pricing hypothesis. |
-| 8 | 3:42–4:00 | Validate with operators, then connect accounting | Operator review, authenticated roles, connector; Huzyefah Wasim. | Deployed app and repository README. |
+Reviewing this manually means checking the invoice against the purchase order and receipts, recalculating when goods arrive, and recording why the amount changed. The next reviewer may have to reconstruct that decision. Existing accounting systems offer matching controls. I'm focusing on the exception itself: the changed evidence, the next action, and the approval needed to finish it.
 
-The timestamps are editing targets, not product performance measurements. Preserve visible waiting states; identify any elapsed-time cuts. Verify that judges can open the repository pages shown in the video.
+In Northstar's case, the supplier invoices one hundred and twenty units at forty dollars each: four thousand eight hundred dollars. Receiving has accepted one hundred units, leaving eight hundred dollars unmatched. I prepare that hold, then upload a receipt for ten more units. Claude Opus extracts fields and supporting quotes. Code validates the source and recalculates the discrepancy.
 
-## Slide-ready copy
+We now have one hundred and ten accepted units and a four hundred dollar gap. I try to approve the old eight hundred dollar proposal. The server rejects it, leaving the ledger unchanged. I approve the revised four hundred dollar hold. The worker records it and creates a supplier follow up task.
 
-### 1
+Next, I upload a four hundred dollar supplier credit. I review the verified credit and release of the hold, then approve. The result is four thousand four hundred dollars net, zero held, and ten units still open on the purchase order. I can inspect the execution history and export the reconciliation.
 
-**Shortfall**
+I expect reviewers to spend less time finding source values, repeating arithmetic, and explaining previous decisions. They can inspect cited fields, calculated amounts, assignments, and history in one case. The financial goal is fewer overpayments and fewer missed credits. Checking current evidence and tracking the credit helps address three risks: approving unreceived quantities, overlooking a credit, or retaining an outdated hold.
 
-Invoice quantity exceptions for finance and receiving.
+Vultr runs the web application, API, PostgreSQL database, and worker. Claude Opus five point five handles extraction; code controls the amounts and approvals. An approved hold survived a container restart with one execution and one task.
 
-Synthetic records. Live Vultr application.
+The original evaluation accepted nine of twelve supported documents and sent three valid CSVs to review. Twelve documents testing unsupported inputs, wrong references, and embedded instructions produced the expected results. After a validator fix, the three reruns passed, followed by four fresh CSV cases. The report keeps these results separate.
 
-### 2
+This prototype uses synthetic records and an internal ledger, with no bank or ERP connection. Time and cost savings remain unmeasured; the four hundred dollar correction is not cash saved.
 
-**Review the current evidence before approving**
+My proposed buyer is a distributor's finance manager. I'll test a ninety nine dollar monthly workspace price with operators, then add authenticated roles and an accounting connector. I'm Huzyefah Wasim. Try a sample or create your own case.
 
-Inspect the source. Review the proposed amount. Approve the change.
+## Presentation cues
 
-A late receipt creates a new evidence revision.
+1. Show the $800 proposal and explain that a late receipt changes the amount to $400.
+2. Explain the manual comparison, recalculation, and handover work, then show the case queue, source records, assignments, and history.
+3. Upload the late receipt and inspect a supporting quote.
+4. Attempt the old approval, approve the current hold, then verify and approve the credit.
+5. Show $4,400 net, $0 held, and ten open PO units before exporting. Explain the expected time benefit and financial checks without calling the correction cash saved.
+6. Show the Vultr architecture and the separate evaluation sets.
+7. Explain the buyer and proposed pilot price.
+8. Close with the application link and the next operator validation step.
 
-### 3
+Leave time for the model response and approval result. The four minute target describes the presentation, not application response time.
 
-**A late receipt changes the proposed hold**
+## Evidence behind the pitch
 
-120 invoiced × $40 = $4,800\
-100 received → $800 discrepancy\
-110 received → $400 discrepancy
+The [document report](evaluation-results.md) preserves the baseline of 24 documents: 74 correct required fields, 24 abstentions, and zero incorrectly accepted fields. It reports the targeted reruns and fresh CSV set separately. Across all three sets, 28 unique documents used 31 settled calls costing $0.474656.
 
-The server rejects the obsolete $800 approval.
+The [verification record](evaluation.md) covers the deployed workflow, restart, restore, budget limits, and browser/API checks. Use its current release results when discussing test counts.
 
-### 4
+Workflow context: [Microsoft's invoice matching documentation](https://learn.microsoft.com/en-us/dynamics365/finance/accounts-payable/accounts-payable-invoice-matching) describes comparisons among invoices, purchase orders, and receipts, including quantity discrepancies. [Ramp's matching documentation](https://support.ramp.com/hc/en-us/articles/30227975187731-3-Way-Match-with-Ramp-Procurement) explains how received quantities inform bill review and the risk of paying for unreceived goods. These products already provide matching controls.
 
-**Reconcile $4,400 and retain the open order**
+The manual search, recalculation, and handover work in this pitch describes the workflow targeted here. It is a qualitative assumption to validate with operators, not measured customer behavior or a claim that existing products lack controls. Expected time and cost benefits remain hypotheses. The demonstration verifies a ledger correction, not a bank payment prevented or cash saved.
 
-$400 internal hold → verified supplier credit → approved release
+## Submission links
 
-Net invoice: **$4,400**\
-Open purchase order: **10 units**
+- [Live application](https://shortfall.95.179.254.189.sslip.io/)
+- [Public repository](https://github.com/Huzyefahwasim/vultr-hackathon)
+- [Presentation player](https://shortfall.95.179.254.189.sslip.io/submission/)
+- [MP4 download](https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4)
+- [Cover image](https://shortfall.95.179.254.189.sslip.io/submission/cover.png)
+- [Captions](https://shortfall.95.179.254.189.sslip.io/submission/captions.vtt)
+- [Form text](submission/entry.json)
+- [Slide content and speaker notes](submission/slide-content.md)
 
-No payment or ERP write.
-
-### 5
-
-**Vultr runs the workflow**
-
-Browser → Caddy → Next.js web/API\
-PostgreSQL: cases, evidence, approvals, durable jobs, execution records\
-Node worker → Claude Opus 5.5
-
-Application code validates quoted evidence, integer amounts, and current approvals.
-
-### 6
-
-**Check the failure paths**
-
-| Evidence | Verified scope |
-| --- | --- |
-| Automated tests and public API/browser checks | See the current verification record; avoid presenting an older test count as current |
-| Live Opus receipt and credit | Public deployed workflow |
-| Restart/container replacement | One queued hold, one execution, one task |
-| Backup restore | Isolated temporary database |
-| Competing budget requests | Global $40 and workspace $1 admission limits |
-
-| Document evaluation set | Measured result |
-| --- | --- |
-| Frozen baseline: 24 documents | 9/12 supported documents accepted exactly; 3 CSVs safely withheld. All 12 challenge expectations met. |
-| Targeted regression after CSV correction | Previous 3 failures passed; 24/24 required fields correct. |
-| Fresh CSV holdout: 4 documents | 2 supported documents accepted with 18/18 fields correct; 2 correctly withheld. |
-
-The baseline's supported-field counts were **74 correct / 98 required**, **24 abstained**, and **zero incorrectly accepted**. Keep the baseline unchanged and the later checks separate. Across all three sets: 28 unique synthetic documents, 31 settled calls, $0.474656, no uncertain usage. The small corpus and labels were project-authored, with no independent reviewer; they do not establish production accuracy. [Full results and artifacts](evaluation-results.md).
-
-### 7
-
-**A focused workflow in an established category**
-
-| Product | Scope described by its own materials |
-| --- | --- |
-| Ramp | Match bills, purchase orders, and item receipts; inspect receiving status |
-| Zip | Procurement/AP agents with action controls, approvals, and audit history |
-| Shortfall | Demonstrated receipt change → stale approval rejection → approved correction |
-
-Target buyer: finance manager at a small distributor.\
-Proposed pilot: **$99/workspace/month**, a hypothesis requiring operator validation.
-
-We have not established that a competitor lacks Shortfall's demonstrated behavior. The comparison explains our scope; it does not claim exclusive capabilities.
-
-Sources: [Ramp documentation](https://support.ramp.com/3-way-match-with-ramp-procurement), [Zip Superagents](https://zip.com/capabilities/superagents).
-
-### 8
-
-**Validate with operators, then connect accounting**
-
-1. Review the exception flow with accounts-payable operators.
-2. Add authenticated roles and production document retention.
-3. Pilot an accounting connector.
-
-Huzyefah Wasim · solo full-stack developer
-
-[Live application](https://shortfall.95.179.254.189.sslip.io) · [Repository](https://github.com/Huzyefahwasim/vultr-hackathon)
-
-## Narration and editorial checks
-
-Use [narration.txt](submission/narration.txt) and [timing cues](submission/narration-timing.json). Segment six describes the measured document checks while preserving the distinction between the initial pass and subsequent CSV checks. Show the report's exact counts while that segment plays.
-
-Use a licensed preset voice if synthesizing narration. Do not imitate the presenter's voice or describe synthesized audio as a live microphone recording. The reviewed rules do not address synthetic narration; they neither explicitly approve it nor specify a disclosure rule. See [rule review](submission/rules-and-sources.md) before final export.
-
-The final video should be MP4/MOV and under 300 MB. Export slides as PDF; an editable PPTX is useful in addition. Do not submit a silent WebM draft as the final presentation.
-
-Keep claims tied to current evidence: synthetic business records, an internal ledger, a live Vultr deployment, measured workflow checks, and unvalidated buyer/pricing assumptions. Do not claim customer savings, recovered cash, universal extraction accuracy, or production accounting integration.
+Export the completed presentation as PDF. Check the event form after signing in for the exact cutoff, required uploads, and extra fields. [Current submission requirements](submission/rules-and-sources.md)
