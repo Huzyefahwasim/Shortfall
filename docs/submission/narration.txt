@@ -10,6 +10,6 @@ Vultr runs the web application, API, PostgreSQL database, and worker. The worker
 
 Document testing covered twenty-eight synthetic inputs. The initial pass sent three valid CSV files to review. After a validator fix, those reruns and four fresh CSV cases met their expected outcomes. None of the accepted fields we scored were wrong. We also verified restart recovery and spending limits.
 
-Invoice matching is an established category. Ramp offers three-way matching; Zip offers governed procurement agents. Shortfall focuses on this changing-evidence review. The proposed buyer is a distributor's finance manager. We will test a ninety-nine-dollar monthly pilot price with operators.
+Manual review can mean finding source values, repeating calculations, and reconstructing earlier decisions. Shortfall puts cited fields, calculated amounts, assigned work, and history in one case. The goal is less review work and lower risk of overpayment or missed supplier credits. The proposed buyer is a distributor's finance manager, and savings still need operator measurement. I will test a ninety nine dollar monthly workspace price with operators.
 
 The next step is to review the workflow with accounts payable operators, then add authenticated roles and an accounting connector. Huzyefah Wasim built this prototype as a solo full-stack developer. You can try the deployed application and inspect the repository.

@@ -1,11 +1,11 @@
 {
-  "verifiedOn": "2026-11-05",
-  "applicationRevision": "b2365699532ac270aa40a8034d6bdffe18d42c90",
+  "verifiedOn": "2026-11-06",
+  "applicationRevision": "34bba3ad134c4756b6a157f4d9266f31c198d3de",
   "presentationUrl": "https://shortfall.95.179.254.189.sslip.io/submission/",
   "videoUrl": "https://shortfall.95.179.254.189.sslip.io/submission/demo.mp4",
   "video": {
-    "durationSeconds": 265.88,
-    "bytes": 16202676,
+    "durationSeconds": 261.04,
+    "bytes": 13021718,
     "width": 1600,
     "height": 900,
     "framesPerSecond": 25,
@@ -13,7 +13,7 @@
     "audioCodec": "aac",
     "audioSampleRate": 48000,
     "audioChannels": 1,
-    "sha256": "acc8159f839e1bac91199ac69a4a84450f95ccf3f2a272f2ff364d05e8037958"
+    "sha256": "3584c6ca59b0dd67f847cb8d45939413f2a4c361de42f20a7e2fbd5f6ae86d4e"
   },
   "recording": {
     "completedNarrationCues": 54,
@@ -30,8 +30,8 @@
     "finalOpenPurchaseOrderUnits": 10,
     "paymentExecuted": false,
     "actionPlaybackSpeed": 1,
-    "narrationOffsetFromVideoEpochSeconds": 0.99,
-    "idleCaptureCloseTailRemovedSeconds": 4.72
+    "narrationOffsetFromVideoEpochSeconds": 0.041,
+    "idleCaptureCloseTailRemovedSeconds": 4.84
   },
   "publicDelivery": {
     "playerHttpStatus": 200,
@@ -46,9 +46,11 @@
     "mediaErrors": 0,
     "javascriptErrors": 0,
     "captionCues": 54,
-    "seekSecondsVerified": [3.2, 81.8, 96, 110.5, 140.5, 166.5, 206.5, 264.2],
+    "seekSecondsVerified": [3.2, 79.4, 93.3, 108.5, 138, 165, 194, 223, 259.3],
     "captionsAndAmountsVisuallyInspected": true,
-    "syntheticRecordsAndNarrationDisclosureVisible": true
+    "expectedBenefitsAndFinancialGoalsVisible": true,
+    "syntheticRecordsAndNarrationDisclosureVisible": true,
+    "applicationApiCalls": 0
   },
   "scope": "Project-operated checks of a synthetic demonstration. This report does not establish customer savings, production extraction accuracy, or independent validation. The presentation PDF and LabLab submission remain separate."
 }

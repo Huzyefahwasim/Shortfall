@@ -48,7 +48,7 @@ Approve $400 hold → verify $400 credit → approve credit and hold release
 
 **$4,400 net invoice · $0 held · 10 PO units open**
 
-**Financial goal:** fewer overpayments and missed credits through checks on current quantities, recorded credits, and revised approvals.
+**Financial goal:** less staff time per case, fewer overpayments, and fewer missed credits. Check current quantities, recorded credits, and revised approvals.
 
 **Visual:** reconciliation, execution history, and export.
 

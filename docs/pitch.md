@@ -14,7 +14,7 @@ We now have one hundred and ten accepted units and a four hundred dollar gap. I 
 
 Next, I upload a four hundred dollar supplier credit. I review the verified credit and release of the hold, then approve. The result is four thousand four hundred dollars net, zero held, and ten units still open on the purchase order. I can inspect the execution history and export the reconciliation.
 
-I expect reviewers to spend less time finding source values, repeating arithmetic, and explaining previous decisions. They can inspect cited fields, calculated amounts, assignments, and history in one case. The financial goal is fewer overpayments and fewer missed credits. Checking current evidence and tracking the credit helps address three risks: approving unreceived quantities, overlooking a credit, or retaining an outdated hold.
+I expect reviewers to spend less time finding source values, repeating arithmetic, and explaining previous decisions. They can inspect cited fields, calculated amounts, assignments, and history in one case. The financial goal is less staff time per case, fewer overpayments, and fewer missed credits. Checking current evidence and tracking the credit helps address three risks: approving unreceived quantities, overlooking a credit, or retaining an outdated hold.
 
 Vultr runs the web application, API, PostgreSQL database, and worker. Claude Opus five point five handles extraction; code controls the amounts and approvals. An approved hold survived a container restart with one execution and one task.
 

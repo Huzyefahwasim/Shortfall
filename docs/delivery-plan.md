@@ -1,8 +1,8 @@
 # Delivery and submission plan
 
-Updated 5 November 2026. Times use Asia/Karachi (PKT, UTC+5).
+Updated 6 November 2026. Times use Asia/Karachi (PKT, UTC+5).
 
-Release b236569 is deployed with Home, browser history, End session, and bounded panel layouts. Hosted CI passed 53 tests and 11 API/browser workflows; four targeted public tests and four-viewport visual review passed. Earlier live inference, restart/persistence, and isolated restoration checks remain recorded. Document evaluation is complete, with its baseline and later CSV checks separate. The published MP4, cover, and captions passed playback/readability review. Presentation PDF, enrollment/deadline confirmation, and the event form remain outstanding.
+Release 34bba3a is deployed with focused Overview, Documents, and Activity views, paginated lists, and a source reader. Hosted CI and configured local checks passed all 53 tests and 12 API/browser workflows. The full public suite passed all 12 workflows; separate desktop and mobile visual checks passed. Earlier live inference, restart/persistence, and isolated restoration checks remain recorded. Document evaluation is complete, with its baseline and later CSV checks separate. The 6 November MP4, cover, and captions are published; technical metadata, recording checks, public playback, and readability are verified. Presentation PDF, enrollment/deadline confirmation, and the event form remain outstanding.
 
 ## Current position
 
@@ -12,20 +12,22 @@ Release b236569 is deployed with Home, browser history, End session, and bounded
 | Custom durable jobs, execution receipts, extraction cache, budget reservations | Implemented |
 | Live Opus receipt/credit extraction | Successful local and public smoke runs |
 | Stale approval, $400 hold, approved credit/release, $4,400 reconciliation | Successful local and public smoke runs |
-| Deterministic and database tests | All 53 passed in configured CI; local run without DB configuration had 52 passes and one skip |
-| Hosted CI | b236569 passed 53 tests, 11 API/browser workflows, formatting, typecheck, and production build |
-| Targeted public release tests | Four passed in 55.7 seconds: two viewport/dialog matrices, navigation/session lifecycle, and complete receipt/credit resolution/export |
-| Additional public visual checks | Four viewports passed, including Home and all nine new-case fields fitting at 1280 × 560 |
+| Deterministic and database tests | All 53 passed locally and in hosted CI, including configured database integration with no skip |
+| Hosted CI | 34bba3a passed 53 tests, 12 API/browser workflows, formatting, typecheck, and production build |
+| Local API/browser suite | All 12 passed in 3.1 minutes |
+| Full public release suite | All 12 passed in 1.1 minutes, including receipt/credit resolution/export, source quotes/focus, pagination, and session revocation |
+| Strict layout and pagination checks | 1280 × 500, 1280 × 550, 1010 × 500, and 390 × 700; ten cases, 17 documents, and 23 history events traversed without omissions |
+| Additional public visual checks | Five desktop sizes passed with no internal Home/Overview scrolling; mobile Home fits at 390 × 700 and the primary action remains visible in ordinary page flow |
 | Additional deployed CSV smoke | Live Opus extraction verified nine exact evidence spans and the expected $22.50 hold |
 | Database dump and isolated restore | Nine tables, 34 cases, seven budget reservations restored; application database untouched |
-| Public Vultr deployment | b236569 deployed 5 November; HTTPS, health, build, and targeted public checks passed |
+| Public Vultr deployment | 34bba3a deployed 6 November; HTTPS, health, build, and all 12 public API/browser checks passed |
 | Restart/container replacement | Queued $800 hold and session persisted; exactly one execution and task after replay |
 | Concurrent budget admission | One of two racing reservations accepted at each global/workspace boundary |
 | Document evaluation | 28 unique synthetic documents, 31 settled calls, $0.474656; three evaluation sets reported separately |
-| Video and narration | Published MP4: 265.88 seconds, 1600 × 900 at 25 fps, 16,202,676 bytes; updated UI, browser playback, seek points, and caption readability verified |
+| Video and narration | Published 6 November MP4: 261.04 seconds, 1600 × 900 at 25 fps, 13,021,718 bytes; 54 cues, 15 exact source quotes, action speed 1, and 4.84 seconds of idle close time removed. Public playback, nine seek points, and caption readability verified |
 | Slide presentation | Slide content and speaker notes available; presentation PDF still to be exported and supplied |
 | Cover and final public asset links | [Presentation page](https://shortfall.95.179.254.189.sslip.io/submission/), MP4, cover, and captions published; technical metadata verified |
-| Repository visibility | Public access verified; [b236569 hosted CI passed](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41974680837) |
+| Repository visibility | Public access verified; [34bba3a hosted CI passed](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/42109353439) |
 | Event form | Final fields, assets, and LabLab submission still required |
 
 Public demo: [shortfall.95.179.254.189.sslip.io](https://shortfall.95.179.254.189.sslip.io). Both manual-entry checks and live extraction passed on the deployed web/worker. [Workflow verification](evaluation.md) · [Document evaluation](evaluation-results.md)
@@ -38,8 +40,7 @@ Internal submission target: **7 November 2026, 18:00 PKT**, or an earlier offici
 
 | Date | Work | Exit condition |
 | --- | --- | --- |
-| 4 Nov | Published media reviewed | Browser playback, readability, technical metadata, and delivery verified |
-| 5–6 Nov | Complete presentation and final checks | Export presentation PDF; verify fresh judge entry, independent case, and public assets against the frozen build |
+| 6 Nov | Export presentation PDF | Current interface recording, public playback, captions, judge entry, independent case, and public API/browser checks have passed; presentation PDF remains |
 | By 7 Nov, 18:00 PKT | Submit | Complete event fields and confirm submission before the internal target or an earlier official cutoff |
 
 Keep implementation within the original 30–32 focused-hour allowance, then reserve four hours for recording and packaging. Reduce secondary scope when a gate slips. Do not spend the final submission window adding features.
@@ -58,10 +59,11 @@ The first release permits one invoice per supplier/PO within a workspace. Route 
 | --- | --- |
 | Deployment | Public web and backend run on Vultr; new browser session works |
 | Platform behavior | An independent case uses the same engine and preserves its own history after refresh |
+| Interface | Focused Overview, Documents, and Activity views; paginated records; one intentional vertical scroll area for long source text; ordinary mobile page flow |
 | Correctness | Stale approvals fail; retries cannot duplicate effects; credit release requires approval |
 | Recovery | A deployed worker restart and database restore preserve the expected records |
 | Model quality | Published baseline: 9/12 supported documents accepted exactly, three valid CSVs withheld, all 12 challenge expectations met; later checks kept separate |
-| Submission | App, repository, video, cover, captions, and license are available; presentation PDF, enrollment/deadline confirmation, and event form remain |
+| Submission | App, repository, 6 November video, cover, captions, and license are available and media playback is verified; presentation PDF, enrollment/deadline confirmation, and event form remain |
 
 Restart and restoration were exercised. The frozen baseline preceded a CSV validation correction; the three targeted reruns passed afterward. A fresh four-document CSV holdout then met its two acceptance and two review expectations. These project-authored synthetic records have no independent reviewer and do not establish customer-document accuracy. [Evaluation artifacts](evaluation-results.md)
 
@@ -119,11 +121,12 @@ The [repository](https://github.com/Huzyefahwasim/vultr-hackathon) is public and
 - [x] Record the actual public workflow with labeled synthetic data and captions.
 - [x] Generate narration with presentation context and measured evaluation wording.
 - [x] Publish the MP4, 16:9 cover, and captions; verify delivery and encoding metadata.
-- [x] Complete browser playback review of the published MP4.
+- [x] Publish the recording of release 34bba3a with 54 cues and 15 exact live source quotes.
+- [x] Complete public browser playback, all nine seek points, and caption/readability review of the 6 November MP4.
 - [ ] Export the presentation as PDF from the [slide content and speaker notes](submission/slide-content.md) and attach it to the event form.
 - [ ] Enter title, summary, description, Challenge 02, technology tags, and participation mode.
 - [ ] Check the actual form's limits; standard guidance uses 5–50 title characters, 50–255 summary characters, and 600–2,000 description characters.
-- [x] Keep the MP4 under 300 MB: published duration 4:26, size approximately 16.2 MB.
+- [x] Keep the MP4 under 300 MB: 6 November duration 4:21, size approximately 13.0 MB.
 - [x] Verify public repository access, setup commands, MIT license, and README Vultr explanation.
 - [x] State the input boundary, internal ledger scope, and measured evaluation limits.
 - [ ] Submit through LabLab and confirm the dashboard records the entry.

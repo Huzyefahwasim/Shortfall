@@ -1,28 +1,33 @@
 # Evaluation and release checks
 
-UI release snapshot: 5 November 2026, deployed revision b236569. These results cover local checks, hosted CI, and the public Vultr deployment. Earlier live extraction and frozen document-evaluation results retain their original scope. Synthetic fixtures establish specific behavior; they do not establish customer value or general extraction accuracy.
+UI release snapshot: 6 November 2026, deployed revision 34bba3a. These results cover local checks, hosted CI, the public Vultr deployment, and the new recording. Earlier live extraction and frozen document-evaluation results retain their original scope. Synthetic fixtures establish specific behavior; they do not establish customer value or general extraction accuracy.
 
 ## Observed checks
 
 | Check | Observed result | Scope |
 | --- | --- | --- |
 | TypeScript and formatting | Passed | Whole repository typecheck and formatting check |
-| Hosted CI for b236569 | Passed | All 53 tests including configured database integration, 11 API/browser workflows, formatting, typechecking, and production build |
-| Regular test suite | 52 passed locally; one database test skipped without configuration; all 53 passed in configured CI | Domain, extraction, budget arithmetic, origin checks, PDF parsing, PCM alignment, session handling, and related deterministic checks |
-| Database integration | Passed separately | Ownership, competing approvals/execution, source serialization, reset accounting, retries, expiry/session limits, and concurrent global/workspace budget admission |
-| API/browser suite | All 11 passed in hosted CI | Three API workflows, two original UI workflows, and six navigation/layout regressions |
-| Targeted public release tests | Four passed in 55.7 seconds | All views/dialogs at 1280 × 560 and 390 × 700; Home/history, skip link, cross-tab logout, old-token 401 and explicit re-entry; full UI receipt/credit resolution and export |
-| Additional public visual checks | Passed separately at four viewports | 1280 × 560, 1366 × 650, 1440 × 760, and 390 × 700; Home fits and all nine new-case fields fit without form scrolling at 1280 × 560 |
+| Hosted CI for 34bba3a | Passed | All 53 tests including configured database integration, 12 API/browser workflows, formatting, typechecking, and production build |
+| Regular test suite | All 53 passed locally and in hosted CI, with no database skip | Domain, extraction, budget arithmetic, origin checks, PDF parsing, PCM alignment, session handling, and related deterministic checks |
+| Database integration | Passed in the configured suite | Ownership, competing approvals/execution, source serialization, reset accounting, retries, expiry/session limits, and concurrent global/workspace budget admission |
+| API/browser suite | All 12 passed locally in 3.1 minutes and in hosted CI | API and UI workflows, strict layout checks, source wrapping/quotes/focus, pagination, navigation, and session lifecycle |
+| Full public release suite | All 12 passed in 1.1 minutes | Complete receipt/credit resolution and export; cross-tab logout, old-token HTTP 401, and explicit re-entry; all current API/browser regressions |
+| Strict layout regressions | Passed locally, in CI, and publicly | 1280 × 500, 1280 × 550, 1010 × 500, and 390 × 700 |
+| Pagination and source reader | Passed | Ten cases, 17 documents, and 23 history events remain reachable without omissions; long source text wraps, selected quotes remain visible, and closing the source returns focus |
+| Additional public visual checks | Passed separately at five desktop sizes and on mobile | Desktop: 1280 × 500, 1280 × 550, 1010 × 500, 1366 × 650, and 1440 × 760; no internal Home/Overview scrolling. Mobile: 390 × 700; Home fits, primary action at y=571–615, ordinary page flow of 895 px |
 | Live Opus workflow | Passed locally and on the public deployment | Sample receipt and credit uploads, validated evidence, stale approval rejection, worker execution, and final reconciliation |
 | Additional deployed CSV smoke | Passed | Live Opus upload, nine exact evidence spans, and expected 2,250-cent hold |
 | Production build and deployment | Passed | Linux production build, public HTTPS, fresh session, database health, and worker heartbeat |
 | Public visual check | Passed | Desktop/mobile screenshots, no reported browser errors or horizontal overflow |
 | Restart/container replacement | Passed publicly | Queued hold and session persisted; replay produced one execution, one task, and 80,000 cents held |
 | Backup restoration | Passed in an isolated temporary database | Nine tables, 34 cases, and seven budget reservations restored; temporary database removed and application database unchanged |
-| Recorded public workflow | Passed | 54 recording cues, 15 exact live source quotes, and correct reconciled ledger/export |
-| Published presentation | Delivery, technical metadata, playback, seek points, and readability verified | MP4: 265.88 seconds, 1600 × 900, 25 fps, H.264/AAC, 16,202,676 bytes; updated UI, public cover and 54 VTT cues; no JavaScript/media errors |
+| Recorded public workflow, 6 November | Passed | Release 34bba3a; 54 recording cues, 15 exact live source quotes, and correct reconciled ledger/export |
+| Published presentation, 6 November | Published; technical metadata, playback, seeking, and readability verified | MP4: 261.04 seconds, 1600 × 900, 25 fps, 13,021,718 bytes; public cover and 54 English VTT cues; action speed factor 1 with 4.84 seconds of idle close time removed |
+| Public media delivery/playback | Passed | HTML, MP4, and VTT returned HTTP 200; a 1,024-byte range returned HTTP 206; playback advanced; all nine seek points passed with no JavaScript/media errors or application API calls |
 
-The [hosted CI run for b236569](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/41974680837) passed all 53 tests, including configured database integration, and all 11 API/browser workflows. Four targeted tests were then run against the public release and passed in 55.7 seconds. The six navigation/layout regressions verify internal scrolling and reachable actions in bounded panels. Browser workflows use manual entry; separate live smoke runs call the provider.
+The [hosted CI run for 34bba3a](https://github.com/Huzyefahwasim/vultr-hackathon/actions/runs/42109353439) passed all 53 tests, including configured database integration, and all 12 API/browser workflows. The full public suite then passed in 1.1 minutes. The interface separates Overview, Documents, and Activity, uses pagination for record lists, and keeps one intentional vertical scroll area in the document reader. Mobile pages use ordinary vertical flow. Browser workflows use manual entry; separate live smoke runs call the provider.
+
+Public video review checked 3.2, 79.4, 93.3, 108.5, 138, 165, 194, 223, and 259.3 seconds. Amounts, source quotes, business benefits, and closing disclosures were readable. These playback checks are separate from application API/browser tests.
 
 ## Live extraction snapshot
 
@@ -63,7 +68,7 @@ node scripts/smoke-inference.mjs
 
 That script uses the running application and worker, uploads the supplied receipt and credit, checks the stale conflict and ledger results, and consumes API allowance. Set TEST_BASE_URL to target another deployment. Its local report is a run artifact, not a credential file.
 
-The reusable recording script is scripts/record-demo.mjs. For restart verification, scripts/smoke-recovery.mjs has prepare and verify phases around a deliberate service replacement. The backup helper scripts/backup-database.sh has passed Linux shell syntax validation; automated offsite scheduling is not configured.
+The reusable recording script is scripts/record-submission.mjs. For restart verification, scripts/smoke-recovery.mjs has prepare and verify phases around a deliberate service replacement. The backup helper scripts/backup-database.sh has passed Linux shell syntax validation; automated offsite scheduling is not configured.
 
 The extended PostgreSQL budget test raced two $0.09 reservations against $39.91 global usage and accepted exactly one, reaching $40. It repeated the race at $0.91 workspace usage and accepted exactly one, reaching $1.
 
@@ -96,11 +101,11 @@ Evidence checks require exact unique source quotes, server-calculated offsets, m
 - [x] Recheck fresh public own-case entry, guide access, visitor isolation, persistence, and mobile behavior on the deployed build.
 - [x] Check expiry/session limits, upload boundaries, and failure states in database integration.
 - [x] Verify public repository access and the passing hosted CI run.
-- [x] Publish the narrated MP4, cover, and captions and verify delivery/technical metadata.
-- [x] Complete browser playback and caption/readability review across all eight seek points.
+- [x] Publish the 6 November narrated MP4, cover, and captions and verify technical metadata and recording checks.
+- [x] Complete public browser playback, all nine seek points, and caption/readability review of the new recording.
 - [ ] Complete presentation PDF and final event-form verification.
 
-The deployed restart and isolated restoration were exercised, not inferred from local retry tests or the existence of a dump. Public repository access, media delivery, and browser playback are verified. The presentation PDF and event form remain. [Media details](submission/media-notes.md)
+The deployed restart and isolated restoration were exercised, not inferred from local retry tests or the existence of a dump. Public repository access, media publication, recording checks, and public playback are verified. Presentation PDF, enrollment/deadline confirmation, and the event form remain. [Media details](submission/media-notes.md)
 
 ## Document-quality evaluation
 

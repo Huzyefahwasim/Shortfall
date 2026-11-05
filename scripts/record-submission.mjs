@@ -36,6 +36,8 @@ const creditFile = path.join(root, 'public', 'samples', 'credit-note.txt');
 const architectureURL = `${repository}#how-vultr-powers-the-application`;
 const evaluationURL = `${repository}/blob/main/docs/evaluation-results.md`;
 const comparisonURL = `${repository}/blob/main/docs/submission/slide-content.md#7-start-with-a-distributors-finance-team`;
+const businessURL = `${repository}/blob/main/docs/submission/slide-content.md#2-reduce-the-work-around-a-changed-receipt`;
+const businessHeading = '2. Reduce the work around a changed receipt';
 const comparisonHeading = "7. Start with a distributor's finance team";
 const comparisonBuyer = /Proposed buyer: finance manager at a small distributor/;
 const viewport = { width: 1600, height: 900 };
@@ -408,6 +410,9 @@ try {
       await pause(4000);
       if (url === comparisonURL) {
         await expect(
+          checkPage.getByRole('heading', { name: businessHeading, exact: true }).first(),
+        ).toBeVisible();
+        await expect(
           checkPage.getByRole('heading', { name: comparisonHeading, exact: true }).first(),
         ).toBeVisible();
         await expect(checkPage.getByText(comparisonBuyer).first()).toBeVisible();
@@ -710,10 +715,10 @@ try {
   await narrate(6, 3);
   await narrate(6, 4);
   await subtitle('');
-  await navigateDocument(comparisonURL, () =>
+  await navigateDocument(businessURL, () =>
     page
       .getByRole('heading', {
-        name: comparisonHeading,
+        name: businessHeading,
         exact: true,
       })
       .first(),
